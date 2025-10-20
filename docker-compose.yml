@@ -1,0 +1,14 @@
+#for local development
+services:
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: illuminati-frontend
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./src:/app/src
+      - /app/node_modules
+    stdin_open: true
+    tty: true
