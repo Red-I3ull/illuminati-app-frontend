@@ -11,7 +11,7 @@ const EntryPassword = () => {
       return "Password cannot be empty.";
     }
     if (passwordValue.length < 8) {
-      return "Password must be at least 8 characters long.";
+      return "Inccorect";
     }
     return "";
   };
@@ -24,7 +24,7 @@ const EntryPassword = () => {
       return;
     }
     setError("");
-    console.log("Password submitted:");
+    //endpoint
     navigate("/login");
   };
 

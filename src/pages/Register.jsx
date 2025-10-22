@@ -27,7 +27,7 @@ const SignIn = () => {
     return newErrors;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const validationErrors = validate();
     if (Object.keys(validationErrors).length > 0) {
@@ -36,7 +36,18 @@ const SignIn = () => {
     }
 
     setErrors({});
-    console.log("Registrated");
+    try {
+      const response = await axios.post("http://localhost:8000/register/", {
+        username: username,
+        email: email,
+        password: password,
+      });
+    } catch (error) {
+      console.error("Registration failed:", error.response || error.message);
+      setErrors({
+        form: "Registration failed. The email or username might already be taken.",
+      });
+    }
     navigate("/login");
   };
 
