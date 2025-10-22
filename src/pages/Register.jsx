@@ -36,16 +36,12 @@ const SignIn = () => {
     }
 
     setErrors({});
-      try {
-      const response = await axios.post(
-        "http://localhost:8000/register/",
-        {
-          username: username,
-          email: email,
-          password: password,
-        }
-      );
-
+    try {
+      const response = await axios.post("http://localhost:8000/register/", {
+        username: username,
+        email: email,
+        password: password,
+      });
     } catch (error) {
       console.error("Registration failed:", error.response || error.message);
       setErrors({

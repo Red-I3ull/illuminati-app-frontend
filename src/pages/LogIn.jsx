@@ -30,21 +30,17 @@ const LogIn = () => {
     }
     setErrors({});
 
-          try {
-          const response = await axios.post(
-            "http://localhost:8000/login/",
-            {
-              username: username,
-              password: password,
-            }
-          );
-
-        } catch (error) {
-          console.error("Registration failed:", error.response || error.message);
-          setErrors({
-            form: "Registration failed. The email or username might already be taken.",
-          });
-        }
+    try {
+      const response = await axios.post("http://localhost:8000/login/", {
+        username: username,
+        password: password,
+      });
+    } catch (error) {
+      console.error("Registration failed:", error.response || error.message);
+      setErrors({
+        form: "Registration failed. The email or username might already be taken.",
+      });
+    }
 
     navigate("/main");
   };

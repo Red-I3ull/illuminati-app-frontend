@@ -16,21 +16,22 @@ const Dashboard = () => {
   const navigate = useNavigate();
 
   const handleRoleSelect = (userId, newRole) => {
-    setSelectedRoles(prevSelectedRoles => ({
+    setSelectedRoles((prevSelectedRoles) => ({
       ...prevSelectedRoles,
       [userId]: newRole,
     }));
-  };;
+  };
 
- 
   const handleConfirmRoleChange = (userId) => {
     const newRole = selectedRoles[userId];
     if (newRole) {
-        //for role endpoint
-      setUsers(users.map(user =>
-        user.id === userId ? { ...user, role: newRole } : user
-      ));
-      setSelectedRoles(prevSelectedRoles => {
+      //for role endpoint
+      setUsers(
+        users.map((user) =>
+          user.id === userId ? { ...user, role: newRole } : user,
+        ),
+      );
+      setSelectedRoles((prevSelectedRoles) => {
         const updatedSelectedRoles = { ...prevSelectedRoles };
         delete updatedSelectedRoles[userId];
         return updatedSelectedRoles;
@@ -81,41 +82,48 @@ const Dashboard = () => {
                   </th>
                 </tr>
               </thead>
-             <tbody>
-              {users.map((user) => {
-                const isChanged = selectedRoles[user.id] && selectedRoles[user.id] !== user.role;
-                return (
-                  <tr key={user.id} className="border-b border-gray-700 hover:bg-gray-700/50">
-                    <td className="p-4">{user.email}</td>
-                    <td className="p-4">{user.username}</td>
-                    <td className="p-4">
-                      <select
-                        value={selectedRoles[user.id] || user.role}
-                        onChange={(e) => handleRoleSelect(user.id, e.target.value)}
-                        className="bg-gray-700 border border-gray-600 rounded-md px-2 py-1 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                      >
-                        <option value="Gold Masson">Gold Masson</option>
-                        <option value="Silver Masson">Silver Masson</option>
-                        <option value="Masson">Masson</option>
-                      </select>
-                    </td>
-                    <td className="p-4 text-center">
-                      <button
-                        onClick={() => handleConfirmRoleChange(user.id)}
-                        disabled={!isChanged}
-                        className={`font-bold py-1 px-3 rounded-md transition-colors ${
-                          isChanged
-                            ? 'bg-green-600 hover:bg-green-700 text-white'
-                            : 'bg-gray-600 text-gray-400 cursor-not-allowed'
-                        }`}
-                      >
-                        Confirm
-                      </button>
-                    </td>
-                  </tr>
-                )
-              })}
-            </tbody>
+              <tbody>
+                {users.map((user) => {
+                  const isChanged =
+                    selectedRoles[user.id] &&
+                    selectedRoles[user.id] !== user.role;
+                  return (
+                    <tr
+                      key={user.id}
+                      className="border-b border-gray-700 hover:bg-gray-700/50"
+                    >
+                      <td className="p-4">{user.email}</td>
+                      <td className="p-4">{user.username}</td>
+                      <td className="p-4">
+                        <select
+                          value={selectedRoles[user.id] || user.role}
+                          onChange={(e) =>
+                            handleRoleSelect(user.id, e.target.value)
+                          }
+                          className="bg-gray-700 border border-gray-600 rounded-md px-2 py-1 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        >
+                          <option value="Gold Masson">Gold Masson</option>
+                          <option value="Silver Masson">Silver Masson</option>
+                          <option value="Masson">Masson</option>
+                        </select>
+                      </td>
+                      <td className="p-4 text-center">
+                        <button
+                          onClick={() => handleConfirmRoleChange(user.id)}
+                          disabled={!isChanged}
+                          className={`font-bold py-1 px-3 rounded-md transition-colors ${
+                            isChanged
+                              ? "bg-green-600 hover:bg-green-700 text-white"
+                              : "bg-gray-600 text-gray-400 cursor-not-allowed"
+                          }`}
+                        >
+                          Confirm
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
             </table>
           </div>
         </div>

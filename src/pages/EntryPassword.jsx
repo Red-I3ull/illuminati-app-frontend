@@ -24,7 +24,7 @@ const EntryPassword = () => {
       return;
     }
     setError("");
-    //endpoint 
+    //endpoint
     navigate("/login");
   };
 
