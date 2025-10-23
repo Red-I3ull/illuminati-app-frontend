@@ -1,22 +1,22 @@
-import React, { useState } from "react";
-import { useNavigate, NavLink } from "react-router";
-import axios from "axios";
+import React, { useState } from 'react';
+import { useNavigate, NavLink } from 'react-router';
+import axios from 'axios';
 
 const LogIn = () => {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
   const [errors, setErrors] = useState({});
   const navigate = useNavigate();
 
   const validate = () => {
     const newErrors = {};
     if (!username) {
-      newErrors.username = "Username cannot be empty.";
+      newErrors.username = 'Username cannot be empty.';
     }
     if (!password) {
-      newErrors.password = "Password cannot be empty.";
+      newErrors.password = 'Password cannot be empty.';
     } else if (password.length < 8) {
-      newErrors.password = "Password must be at least 8 characters long.";
+      newErrors.password = 'Password must be at least 8 characters long.';
     }
     return newErrors;
   };
@@ -31,18 +31,18 @@ const LogIn = () => {
     setErrors({});
 
     try {
-      const response = await axios.post("http://localhost:8000/login/", {
+      const response = await axios.post('http://localhost:8000/login/', {
         username: username,
         password: password,
       });
     } catch (error) {
-      console.error("Registration failed:", error.response || error.message);
+      console.error('Registration failed:', error.response || error.message);
       setErrors({
-        form: "Registration failed. The email or username might already be taken.",
+        form: 'Registration failed. The email or username might already be taken.',
       });
     }
 
-    navigate("/main");
+    navigate('/main');
   };
 
   return (
@@ -79,7 +79,7 @@ const LogIn = () => {
                 className={`block w-full px-3 py-2 border rounded-md shadow-sm 
                                bg-gray-800 text-white placeholder-gray-500
                                focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm
-                               ${errors.username ? "border-red-500" : "border-gray-600"}`}
+                               ${errors.username ? 'border-red-500' : 'border-gray-600'}`}
                 placeholder="illuminati"
               />
               {errors.username && (
@@ -105,7 +105,7 @@ const LogIn = () => {
                 className={`block w-full px-3 py-2 border rounded-md shadow-sm 
                                bg-gray-800 text-white placeholder-gray-500
                                focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm
-                               ${errors.password ? "border-red-500" : "border-gray-600"}`}
+                               ${errors.password ? 'border-red-500' : 'border-gray-600'}`}
                 placeholder="••••••••"
               />
               {errors.password && (

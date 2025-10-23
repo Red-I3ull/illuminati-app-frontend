@@ -1,28 +1,28 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router";
-import axios from "axios";
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router';
+import axios from 'axios';
 
 const SignIn = () => {
-  const [email, setEmail] = useState("");
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
   const [errors, setErrors] = useState({});
   let navigate = useNavigate();
 
   const validate = () => {
     const newErrors = {};
     if (!email) {
-      newErrors.email = "Email cannot be empty.";
+      newErrors.email = 'Email cannot be empty.';
     } else if (!/\S+@\S+\.\S+/.test(email)) {
-      newErrors.email = "Email address is invalid.";
+      newErrors.email = 'Email address is invalid.';
     }
     if (!username) {
-      newErrors.username = "Username cannot be empty.";
+      newErrors.username = 'Username cannot be empty.';
     }
     if (!password) {
-      newErrors.password = "Password cannot be empty.";
+      newErrors.password = 'Password cannot be empty.';
     } else if (password.length < 8) {
-      newErrors.password = "Password must be at least 8 characters long.";
+      newErrors.password = 'Password must be at least 8 characters long.';
     }
     return newErrors;
   };
@@ -37,18 +37,18 @@ const SignIn = () => {
 
     setErrors({});
     try {
-      const response = await axios.post("http://localhost:8000/register/", {
+      const response = await axios.post('http://localhost:8000/register/', {
         username: username,
         email: email,
         password: password,
       });
     } catch (error) {
-      console.error("Registration failed:", error.response || error.message);
+      console.error('Registration failed:', error.response || error.message);
       setErrors({
-        form: "Registration failed. The email or username might already be taken.",
+        form: 'Registration failed. The email or username might already be taken.',
       });
     }
-    navigate("/login");
+    navigate('/login');
   };
 
   return (
@@ -85,7 +85,7 @@ const SignIn = () => {
                 className={`block w-full px-3 py-2 border rounded-md shadow-sm 
                            bg-gray-800 text-white placeholder-gray-500
                            focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm
-                           ${errors.email ? "border-red-500" : "border-gray-600"}`}
+                           ${errors.email ? 'border-red-500' : 'border-gray-600'}`}
                 placeholder="illuminati@mail.com"
               />
               {errors.email && (
@@ -111,7 +111,7 @@ const SignIn = () => {
                 className={`block w-full px-3 py-2 border rounded-md shadow-sm 
                            bg-gray-800 text-white placeholder-gray-500
                            focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm
-                           ${errors.username ? "border-red-500" : "border-gray-600"}`}
+                           ${errors.username ? 'border-red-500' : 'border-gray-600'}`}
                 placeholder="illuminati"
               />
               {errors.username && (
@@ -137,7 +137,7 @@ const SignIn = () => {
                 className={`block w-full px-3 py-2 border rounded-md shadow-sm 
                            bg-gray-800 text-white placeholder-gray-500
                            focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm
-                           ${errors.password ? "border-red-500" : "border-gray-600"}`}
+                           ${errors.password ? 'border-red-500' : 'border-gray-600'}`}
                 placeholder="••••••••"
               />
               {errors.password && (

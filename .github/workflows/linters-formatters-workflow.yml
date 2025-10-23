@@ -1,0 +1,29 @@
+# This workfrow includes the next listers and formaters check:
+# Pylint - for .py files
+# Prettier
+
+name: Linters and Formatters
+
+on:
+  push:
+
+  workflow_dispatch:
+
+jobs:
+  prettier:
+    name: Prettier
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Install Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install Prettier
+        run: npm install prettier
+
+      - name: Run Prettier and make changes
+        run: npx prettier . --check

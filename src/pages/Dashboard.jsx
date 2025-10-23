@@ -1,18 +1,18 @@
-import React, { useState } from "react";
-import { useNavigate, NavLink } from "react-router";
-import Navigation from "../components/Navigation";
+import React, { useState } from 'react';
+import { useNavigate, NavLink } from 'react-router';
+import Navigation from '../components/Navigation';
 
 //for testing created an object with users data, need endpoint to get users
 const initialUsers = [
-  { id: 1, email: "test@gmail.com", username: "user1", role: "Gold Masson" },
-  { id: 2, email: "test@gmail.co", username: "user2", role: "Masson" },
-  { id: 3, email: "test@gmail.co", username: "user3", role: "Silver Masson" },
+  { id: 1, email: 'test@gmail.com', username: 'user1', role: 'Gold Masson' },
+  { id: 2, email: 'test@gmail.co', username: 'user2', role: 'Masson' },
+  { id: 3, email: 'test@gmail.co', username: 'user3', role: 'Silver Masson' },
 ];
 
 const Dashboard = () => {
   const [users, setUsers] = useState(initialUsers);
   const [selectedRoles, setSelectedRoles] = useState({});
-  const [inviteEmail, setInviteEmail] = useState("");
+  const [inviteEmail, setInviteEmail] = useState('');
   const navigate = useNavigate();
 
   const handleRoleSelect = (userId, newRole) => {
@@ -44,17 +44,17 @@ const Dashboard = () => {
     e.preventDefault();
     if (inviteEmail && /\S+@\S+\.\S+/.test(inviteEmail)) {
       console.log(`Invite sent to: ${inviteEmail}`);
-      setInviteEmail("");
+      setInviteEmail('');
     } else {
-      alert("Please enter a valid email address.");
+      alert('Please enter a valid email address.');
     }
   };
 
   const handleCompromisedClick = () => {
     //for compromised endpoint
     e.preventDefault();
-    console.log("compromised");
-    navigate("/");
+    console.log('compromised');
+    navigate('/');
   };
 
   return (
@@ -113,8 +113,8 @@ const Dashboard = () => {
                           disabled={!isChanged}
                           className={`font-bold py-1 px-3 rounded-md transition-colors ${
                             isChanged
-                              ? "bg-green-600 hover:bg-green-700 text-white"
-                              : "bg-gray-600 text-gray-400 cursor-not-allowed"
+                              ? 'bg-green-600 hover:bg-green-700 text-white'
+                              : 'bg-gray-600 text-gray-400 cursor-not-allowed'
                           }`}
                         >
                           Confirm
