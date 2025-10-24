@@ -1,6 +1,6 @@
-import React, { useState } from "react";
-import LogoIcon from "../assets/other.png";
-import { useNavigate, NavLink } from "react-router";
+import React from 'react';
+import LogoIcon from '../assets/other.png';
+import { useNavigate, NavLink } from 'react-router';
 
 const Navigation = () => {
   const navigate = useNavigate();
@@ -9,7 +9,7 @@ const Navigation = () => {
     e.preventDefault();
     localStorage.clear();
     sessionStorage.clear();
-    navigate("/");
+    navigate('/');
   };
 
   return (

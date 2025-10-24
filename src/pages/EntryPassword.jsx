@@ -1,19 +1,19 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router";
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router';
 
 const EntryPassword = () => {
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
   let navigate = useNavigate();
 
   const validatePassword = (passwordValue) => {
     if (!passwordValue) {
-      return "Password cannot be empty.";
+      return 'Password cannot be empty.';
     }
     if (passwordValue.length < 8) {
-      return "Inccorect";
+      return 'Inccorect';
     }
-    return "";
+    return '';
   };
 
   const handleSubmit = (e) => {
@@ -23,9 +23,9 @@ const EntryPassword = () => {
       setError(validationError);
       return;
     }
-    setError("");
+    setError('');
     //endpoint
-    navigate("/login");
+    navigate('/login');
   };
 
   return (
@@ -57,7 +57,7 @@ const EntryPassword = () => {
                 className={`block w-full px-3 py-2 border rounded-md shadow-sm 
                             bg-gray-800 text-white placeholder-gray-500
                             focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm
-                            ${error ? "border-red-500" : "border-gray-600"}`}
+                            ${error ? 'border-red-500' : 'border-gray-600'}`}
                 placeholder="••••••••"
               />
               {error && <p className="mt-2 text-sm text-red-500">{error}</p>}

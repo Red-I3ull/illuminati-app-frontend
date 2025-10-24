@@ -1,18 +1,12 @@
-import React, { useState } from "react";
-import {
-  MapContainer,
-  TileLayer,
-  Marker,
-  Popup,
-  useMapEvents,
-} from "react-leaflet";
-import L from "leaflet";
-import "leaflet/dist/leaflet.css";
-import ghostIcon from "../assets/ghost.png";
-import ufoIcon from "../assets/ufo.png";
-import bigfootIcon from "../assets/bigfoot.png";
-import otherIcon from "../assets/other.png";
-import Navigation from "../components/Navigation";
+import React, { useState } from 'react';
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
+import ghostIcon from '../assets/ghost.png';
+import ufoIcon from '../assets/ufo.png';
+import bigfootIcon from '../assets/bigfoot.png';
+import otherIcon from '../assets/other.png';
+import Navigation from '../components/Navigation';
 
 const customMarkerIcon = {
   ghost: L.icon({
@@ -87,7 +81,7 @@ const MapPage = () => {
                 icon={marker.icon}
               >
                 <Popup>
-                  Marker <br /> Lat: {marker.pos[0].toFixed(4)}, Lng:{" "}
+                  Marker <br /> Lat: {marker.pos[0].toFixed(4)}, Lng:{' '}
                   {marker.pos[1].toFixed(4)}
                 </Popup>
               </Marker>
