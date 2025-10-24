@@ -18,7 +18,7 @@ describe('Navigation Component', () => {
     render(
       <BrowserRouter>
         <Navigation />
-      </BrowserRouter>
+      </BrowserRouter>,
     );
 
     expect(screen.getByAltText('Logo')).toBeInTheDocument();
@@ -28,7 +28,7 @@ describe('Navigation Component', () => {
     render(
       <BrowserRouter>
         <Navigation />
-      </BrowserRouter>
+      </BrowserRouter>,
     );
 
     expect(screen.getByText('Map Page')).toBeInTheDocument();
@@ -45,7 +45,7 @@ describe('Navigation Component', () => {
     render(
       <BrowserRouter>
         <Navigation />
-      </BrowserRouter>
+      </BrowserRouter>,
     );
 
     const logoutButton = screen.getByText('Log Out');
