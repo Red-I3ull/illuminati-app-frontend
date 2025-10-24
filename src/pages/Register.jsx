@@ -37,7 +37,7 @@ const SignIn = () => {
 
     setErrors({});
     try {
-      const response = await axios.post('http://localhost:8000/register/', {
+      await axios.post('http://localhost:8000/register/', {
         username: username,
         email: email,
         password: password,

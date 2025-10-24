@@ -31,7 +31,7 @@ const LogIn = () => {
     setErrors({});
 
     try {
-      const response = await axios.post('http://localhost:8000/login/', {
+      await axios.post('http://localhost:8000/login/', {
         username: username,
         password: password,
       });

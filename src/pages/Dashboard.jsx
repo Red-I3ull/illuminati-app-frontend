@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate, NavLink } from 'react-router';
+import { useNavigate } from 'react-router';
 import Navigation from '../components/Navigation';
 
 //for testing created an object with users data, need endpoint to get users
