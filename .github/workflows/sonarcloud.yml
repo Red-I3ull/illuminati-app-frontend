@@ -3,7 +3,7 @@ name: SonarCloud Analysis
 
 on:
   push:
-    branches: ['BULL-11-Configure-SonarQube-for-our-repositories']
+    branches: ['main']
   pull_request:
     branches: ['main']
     types: [opened, synchronize, reopened]
