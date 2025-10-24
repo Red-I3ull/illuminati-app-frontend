@@ -39,7 +39,7 @@ jobs:
         continue-on-error: true
 
       - name: Run tests with coverage
-        run: npm test -- --coverage --watchAll=false
+        run: npm test -- --coverage
         continue-on-error: false
         env:
           CI: true
