@@ -1,5 +1,5 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { vi, test, expect, beforeEach} from 'vitest';
+import { vi, test, expect, beforeEach } from 'vitest';
 import MapPage from '../pages/Main.jsx';
 import api from '../axiosConfig.js';
 import { toast } from 'react-toastify';
