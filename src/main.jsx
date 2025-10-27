@@ -7,16 +7,45 @@ import SignIn from './pages/Register.jsx';
 import LogIn from './pages/LogIn.jsx';
 import MapPage from './pages/Main.jsx';
 import Dashboard from './pages/Dashboard.jsx';
+import ProtectedRoute from './components/ProtectedRoute.jsx';
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<EntryPassword />} />
-        <Route path="/register" element={<SignIn />} />
-        <Route path="/login" element={<LogIn />} />
-        <Route path="/main" element={<MapPage />} />
-        <Route path="/dashboard" element={<Dashboard />} />
+        <Route
+          path="/register"
+          element={
+            <ProtectedRoute>
+              <SignIn />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/login"
+          element={
+            <ProtectedRoute>
+              <LogIn />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/main"
+          element={
+            <ProtectedRoute>
+              <MapPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          }
+        />
       </Routes>
     </BrowserRouter>
   </StrictMode>,
