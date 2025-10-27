@@ -8,7 +8,7 @@ import LogIn from './pages/LogIn.jsx';
 import MapPage from './pages/Main.jsx';
 import Dashboard from './pages/Dashboard.jsx';
 import { setAuthToken } from './axiosConfig.js';
-import { ToastContainer, toast } from 'react-toastify';
+import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 const token = localStorage.getItem('authToken');
@@ -28,18 +28,16 @@ createRoot(document.getElementById('root')).render(
       </Routes>
     </BrowserRouter>
 
-      <ToastContainer
-        position="bottom-right"
-        autoClose={5000}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-      />
-
+    <ToastContainer
+      position="bottom-right"
+      autoClose={5000}
+      hideProgressBar={false}
+      newestOnTop={false}
+      closeOnClick
+      rtl={false}
+      pauseOnFocusLoss
+      draggable
+      pauseOnHover
+    />
   </StrictMode>,
-
 );

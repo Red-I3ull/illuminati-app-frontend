@@ -38,15 +38,15 @@ const LogIn = () => {
         password: password,
       });
       const { token, user } = response.data;
-      setAuthToken(token)
+      setAuthToken(token);
       localStorage.setItem('authToken', token);
       localStorage.setItem('user', JSON.stringify(user));
       navigate('/main');
     } catch (error) {
       console.error('Login failed:', error.response || error.message);
-            if (error.response && error.response.status === 401) {
-            toast.error("Invalid credentials");
-            }
+      if (error.response && error.response.status === 401) {
+        toast.error('Invalid credentials');
+      }
     }
   };
 

@@ -25,6 +25,7 @@ describe('Navigation Component', () => {
   });
 
   it('renders navigation links', () => {
+    localStorage.setItem('user', JSON.stringify({ role: 'GOLDEN' })); //fix the test after changing a logic
     render(
       <BrowserRouter>
         <Navigation />
