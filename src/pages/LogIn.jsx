@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate, NavLink } from 'react-router';
+import { toast } from 'react-toastify';
 import axios from 'axios';
+import { setAuthToken } from '../axiosConfig.js';
 
 const LogIn = () => {
   const [username, setUsername] = useState('');
@@ -31,18 +33,21 @@ const LogIn = () => {
     setErrors({});
 
     try {
-      await axios.post('http://localhost:8000/login/', {
+      const response = await axios.post('http://localhost:8000/login/', {
         username: username,
         password: password,
       });
+      const { token, user } = response.data;
+      setAuthToken(token);
+      localStorage.setItem('authToken', token);
+      localStorage.setItem('user', JSON.stringify(user));
+      navigate('/main');
     } catch (error) {
-      console.error('Registration failed:', error.response || error.message);
-      setErrors({
-        form: 'Registration failed. The email or username might already be taken.',
-      });
+      console.error('Login failed:', error.response || error.message);
+      if (error.response && error.response.status === 401) {
+        toast.error('Invalid credentials');
+      }
     }
-
-    navigate('/main');
   };
 
   return (

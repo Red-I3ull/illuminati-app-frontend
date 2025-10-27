@@ -1,12 +1,20 @@
 import React from 'react';
 import LogoIcon from '../assets/other.png';
 import { useNavigate, NavLink } from 'react-router';
+import { setAuthToken } from '../axiosConfig.js';
 
 const Navigation = () => {
   const navigate = useNavigate();
+  let userRole = null;
+  const userString = localStorage.getItem('user');
+  if (userString) {
+    const user = JSON.parse(userString);
+    userRole = user.role;
+  }
 
   const handleLogout = (e) => {
     e.preventDefault();
+    setAuthToken(null);
     localStorage.clear();
     sessionStorage.clear();
     navigate('/');
@@ -30,12 +38,14 @@ const Navigation = () => {
             Map Page
           </NavLink>
 
-          <NavLink
-            className="text-sm font-medium text-gray-300 hover:text-white cursor-pointer"
-            to="/dashboard"
-          >
-            Dashboard
-          </NavLink>
+          {(userRole === 'GOLDEN' || userRole === 'ARCHITECT') && (
+            <NavLink
+              className="text-sm font-medium text-gray-300 hover:text-white cursor-pointer"
+              to="/dashboard"
+            >
+              Dashboard
+            </NavLink>
+          )}
 
           <button
             className="text-sm font-medium text-gray-300 hover:text-white cursor-pointer"
