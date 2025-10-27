@@ -1,5 +1,5 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { vi } from 'vitest';
+import { vi, test, expect, beforeEach} from 'vitest';
 import MapPage from '../pages/Main.jsx';
 import api from '../axiosConfig.js';
 import { toast } from 'react-toastify';
@@ -101,7 +101,7 @@ test('handles marker deletion', async () => {
   await waitFor(() => expect(api.delete).toHaveBeenCalledWith('markers/2/'));
 });
 
-it('does not show delete button for basic USER role', async () => {
+test('does not show delete button for basic USER role', async () => {
   api.get.mockResolvedValueOnce({
     data: [{ id: 2, lat: 30, lng: 40, name: 'bigfoot', user: 1 }],
   });
