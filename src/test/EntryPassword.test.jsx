@@ -21,11 +21,12 @@ describe('EntryPassword Component', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     localStorage.clear();
-    global.fetch = vi.fn();
+    vi.stubGlobal('fetch', vi.fn());
   });
 
   afterEach(() => {
     vi.restoreAllMocks();
+    vi.unstubAllGlobals();
   });
 
   it('renders the component with all elements', () => {
@@ -72,11 +73,14 @@ describe('EntryPassword Component', () => {
   });
 
   it('submits form successfully with valid password', async () => {
-    global.fetch = vi.fn(() =>
-      Promise.resolve({
-        ok: true,
-        json: () => Promise.resolve({ success: true }),
-      }),
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(() =>
+        Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve({ success: true }),
+        }),
+      ),
     );
 
     renderComponent();
@@ -88,7 +92,7 @@ describe('EntryPassword Component', () => {
     fireEvent.click(submitButton);
 
     await waitFor(() => {
-      expect(global.fetch).toHaveBeenCalledWith(
+      expect(globalThis.fetch).toHaveBeenCalledWith(
         'http://localhost:8000/verify-entry-password/',
         expect.objectContaining({
           method: 'POST',
@@ -105,12 +109,15 @@ describe('EntryPassword Component', () => {
   });
 
   it('shows error message when API returns error', async () => {
-    global.fetch = vi.fn(() =>
-      Promise.resolve({
-        ok: false,
-        json: () =>
-          Promise.resolve({ success: false, error: 'Incorrect password' }),
-      }),
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(() =>
+        Promise.resolve({
+          ok: false,
+          json: () =>
+            Promise.resolve({ success: false, error: 'Incorrect password' }),
+        }),
+      ),
     );
 
     renderComponent();
@@ -127,11 +134,14 @@ describe('EntryPassword Component', () => {
   });
 
   it('shows default error message when API returns no specific error', async () => {
-    global.fetch = vi.fn(() =>
-      Promise.resolve({
-        ok: false,
-        json: () => Promise.resolve({ success: false }),
-      }),
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(() =>
+        Promise.resolve({
+          ok: false,
+          json: () => Promise.resolve({ success: false }),
+        }),
+      ),
     );
 
     renderComponent();
@@ -148,7 +158,10 @@ describe('EntryPassword Component', () => {
   });
 
   it('shows connection error when fetch fails', async () => {
-    global.fetch = vi.fn(() => Promise.reject(new Error('Network error')));
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(() => Promise.reject(new Error('Network error'))),
+    );
 
     renderComponent();
 
@@ -164,18 +177,21 @@ describe('EntryPassword Component', () => {
   });
 
   it('shows loading state during form submission', async () => {
-    global.fetch = vi.fn(
-      () =>
-        new Promise((resolve) =>
-          setTimeout(
-            () =>
-              resolve({
-                ok: true,
-                json: () => Promise.resolve({ success: true }),
-              }),
-            100,
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(
+        () =>
+          new Promise((resolve) =>
+            setTimeout(
+              () =>
+                resolve({
+                  ok: true,
+                  json: () => Promise.resolve({ success: true }),
+                }),
+              100,
+            ),
           ),
-        ),
+      ),
     );
 
     renderComponent();
@@ -208,11 +224,14 @@ describe('EntryPassword Component', () => {
     });
 
     // Now submit with valid password
-    global.fetch = vi.fn(() =>
-      Promise.resolve({
-        ok: true,
-        json: () => Promise.resolve({ success: true }),
-      }),
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(() =>
+        Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve({ success: true }),
+        }),
+      ),
     );
 
     fireEvent.change(passwordInput, { target: { value: 'validpassword123' } });
