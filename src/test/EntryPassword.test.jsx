@@ -42,9 +42,9 @@ describe('EntryPassword Component', () => {
     renderComponent();
 
     const passwordInput = screen.getByLabelText(/enter password/i);
-    fireEvent.change(passwordInput, { target: { value: 'testpassword123' } });
+    fireEvent.change(passwordInput, { target: { value: "${{ secrets.TESTPASS }}" } });
 
-    expect(passwordInput.value).toBe('testpassword123');
+    expect(passwordInput.value).toBe("${{ secrets.TESTPASS }}");
   });
 
   it('shows error when password is empty', async () => {
@@ -86,7 +86,7 @@ describe('EntryPassword Component', () => {
     renderComponent();
 
     const passwordInput = screen.getByLabelText(/enter password/i);
-    fireEvent.change(passwordInput, { target: { value: 'validpassword123' } });
+    fireEvent.change(passwordInput, { target: { value: "${{ secrets.TESTPASS }}" } });
 
     const submitButton = screen.getByRole('button', { name: /submit/i });
     fireEvent.click(submitButton);
@@ -97,7 +97,7 @@ describe('EntryPassword Component', () => {
         expect.objectContaining({
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ password: 'validpassword123' }),
+          body: JSON.stringify({ password: "${{ secrets.TESTPASS }}" }),
         }),
       );
     });
@@ -123,7 +123,7 @@ describe('EntryPassword Component', () => {
     renderComponent();
 
     const passwordInput = screen.getByLabelText(/enter password/i);
-    fireEvent.change(passwordInput, { target: { value: 'wrongpassword' } });
+    fireEvent.change(passwordInput, { target: { value: "${{ secrets.TESTPASS }}" } });
 
     const submitButton = screen.getByRole('button', { name: /submit/i });
     fireEvent.click(submitButton);
@@ -147,7 +147,7 @@ describe('EntryPassword Component', () => {
     renderComponent();
 
     const passwordInput = screen.getByLabelText(/enter password/i);
-    fireEvent.change(passwordInput, { target: { value: 'somepassword123' } });
+    fireEvent.change(passwordInput, { target: { value: "${{ secrets.TESTPASS }}" } });
 
     const submitButton = screen.getByRole('button', { name: /submit/i });
     fireEvent.click(submitButton);
@@ -166,7 +166,7 @@ describe('EntryPassword Component', () => {
     renderComponent();
 
     const passwordInput = screen.getByLabelText(/enter password/i);
-    fireEvent.change(passwordInput, { target: { value: 'validpassword123' } });
+    fireEvent.change(passwordInput, { target: { value: '"${{ secrets.TESTPASS }}"' } });
 
     const submitButton = screen.getByRole('button', { name: /submit/i });
     fireEvent.click(submitButton);
@@ -197,7 +197,7 @@ describe('EntryPassword Component', () => {
     renderComponent();
 
     const passwordInput = screen.getByLabelText(/enter password/i);
-    fireEvent.change(passwordInput, { target: { value: 'validpassword123' } });
+    fireEvent.change(passwordInput, { target: { value: '"${{ secrets.TESTPASS }}"' } });
 
     const submitButton = screen.getByRole('button', { name: /submit/i });
     fireEvent.click(submitButton);
@@ -234,7 +234,7 @@ describe('EntryPassword Component', () => {
       ),
     );
 
-    fireEvent.change(passwordInput, { target: { value: 'validpassword123' } });
+    fireEvent.change(passwordInput, { target: { value: '"${{ secrets.TESTPASS }}"' } });
     fireEvent.click(submitButton);
 
     await waitFor(() => {
