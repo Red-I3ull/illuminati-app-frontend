@@ -29,13 +29,16 @@ const EntryPassword = () => {
     setError('');
 
     try {
-      const response = await fetch('http://localhost:8000/verify-entry-password/', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+      const response = await fetch(
+        'http://localhost:8000/verify-entry-password/',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ password }),
         },
-        body: JSON.stringify({ password }),
-      });
+      );
 
       const data = await response.json();
 
