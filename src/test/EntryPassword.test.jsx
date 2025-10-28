@@ -13,7 +13,7 @@ const renderComponent = () => {
   return render(
     <BrowserRouter>
       <EntryPassword />
-    </BrowserRouter>
+    </BrowserRouter>,
   );
 };
 
@@ -76,7 +76,7 @@ describe('EntryPassword Component', () => {
       Promise.resolve({
         ok: true,
         json: () => Promise.resolve({ success: true }),
-      })
+      }),
     );
 
     renderComponent();
@@ -94,7 +94,7 @@ describe('EntryPassword Component', () => {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ password: 'validpassword123' }),
-        })
+        }),
       );
     });
 
@@ -108,8 +108,9 @@ describe('EntryPassword Component', () => {
     global.fetch = vi.fn(() =>
       Promise.resolve({
         ok: false,
-        json: () => Promise.resolve({ success: false, error: 'Incorrect password' }),
-      })
+        json: () =>
+          Promise.resolve({ success: false, error: 'Incorrect password' }),
+      }),
     );
 
     renderComponent();
@@ -130,7 +131,7 @@ describe('EntryPassword Component', () => {
       Promise.resolve({
         ok: false,
         json: () => Promise.resolve({ success: false }),
-      })
+      }),
     );
 
     renderComponent();
@@ -172,9 +173,9 @@ describe('EntryPassword Component', () => {
                 ok: true,
                 json: () => Promise.resolve({ success: true }),
               }),
-            100
-          )
-        )
+            100,
+          ),
+        ),
     );
 
     renderComponent();
@@ -211,14 +212,16 @@ describe('EntryPassword Component', () => {
       Promise.resolve({
         ok: true,
         json: () => Promise.resolve({ success: true }),
-      })
+      }),
     );
 
     fireEvent.change(passwordInput, { target: { value: 'validpassword123' } });
     fireEvent.click(submitButton);
 
     await waitFor(() => {
-      expect(screen.queryByText(/password cannot be empty/i)).not.toBeInTheDocument();
+      expect(
+        screen.queryByText(/password cannot be empty/i),
+      ).not.toBeInTheDocument();
     });
   });
 
