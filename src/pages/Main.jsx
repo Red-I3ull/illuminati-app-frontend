@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import {
@@ -58,6 +58,8 @@ const MapPage = () => {
   const [setMap] = useState(null);
   const [markers, setMarkers] = useState([]);
   const [selectedIconType, setSelectedIconType] = useState('other');
+  const [selectedFile, setSelectedFile] = useState(null);
+  const fileInputRef = useRef(null);
   const defaultPosition = [48.919, 24.71]; // IF
 
   let userRole = null;
@@ -69,14 +71,17 @@ const MapPage = () => {
 
   // create a marker on klick
   const handleMapClick = async (latlng) => {
-    const payload = {
-      lat: latlng.lat,
-      lng: latlng.lng,
-      name: selectedIconType,
-    };
+    const formData = new FormData();
+    formData.append('lat', latlng.lat);
+    formData.append('lng', latlng.lng);
+    formData.append('name', selectedIconType);
+
+    if (selectedFile) {
+      formData.append('image', selectedFile);
+    }
 
     try {
-      const response = await api.post('markers/', payload);
+      const response = await api.post('markers/', formData);
       const newMarker = response.data;
       setMarkers((prevMarkers) => [
         ...prevMarkers,
@@ -86,8 +91,14 @@ const MapPage = () => {
           name: newMarker.name,
           icon: customMarkerIcon[newMarker.name] || customMarkerIcon.other,
           user: newMarker.user,
+          image: newMarker.image,
         },
       ]);
+      setSelectedFile(null);
+
+      if (fileInputRef.current) {
+        fileInputRef.current.value = null;
+      }
       toast.success('You added a new marker!');
     } catch (error) {
       console.error('Error creating marker:', error);
@@ -108,6 +119,7 @@ const MapPage = () => {
           name: marker.name,
           icon: customMarkerIcon[marker.name] || customMarkerIcon.other,
           user: marker.user,
+          image: marker.image,
         }));
         setMarkers(loadedMarkers);
       } catch (error) {
@@ -127,6 +139,10 @@ const MapPage = () => {
     } catch (error) {
       console.error('Error deleting marker:', error);
     }
+  };
+
+  const handleFileChange = (e) => {
+    setSelectedFile(e.target.files[0]);
   };
 
   return (
@@ -154,6 +170,19 @@ const MapPage = () => {
               (Click on the map to add)
             </span>
 
+            <label htmlFor="file-upload" className="text-sm font-medium">
+              Photo:
+            </label>
+            <input
+              id="file-upload"
+              type="file"
+              accept="image/*"
+              onChange={handleFileChange}
+              className="text-sm text-gray-400 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-sm file:font-medium file:bg-indigo-700 file:text-white hover:file:bg-indigo-600"
+              ref={fileInputRef}
+            />
+          </div>
+          <div className="flex items-right space-x-4">
             <label htmlFor="icon-select" className="text-sm font-medium">
               Your Rank:
             </label>
@@ -175,7 +204,14 @@ const MapPage = () => {
             {markers.map((marker) => (
               <Marker key={marker.id} position={marker.pos} icon={marker.icon}>
                 <Popup>
-                  Marker Type: <strong>{marker.name}</strong>
+                  {marker.image && (
+                    <img
+                      src={`http://localhost:8000${marker.image}`}
+                      alt="Marker"
+                      className="w-full h-auto rounded-md mb-2"
+                    />
+                  )}
+                  Marker: <strong>{marker.name}</strong>
                   <br />
                   Lat: {marker.pos[0].toFixed(4)}, Lng:{' '}
                   {marker.pos[1].toFixed(4)}
