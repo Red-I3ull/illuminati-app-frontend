@@ -53,7 +53,7 @@ test('renders map and navigation', async () => {
   await waitFor(() => expect(api.get).toHaveBeenCalledWith('markers/'));
 });
 
-test('fetches and displays markers on mount', async () => {
+test('fetches and displays all markers', async () => {
   api.get.mockResolvedValueOnce({
     data: [{ id: 1, lat: 10, lng: 20, name: 'ghost', user: 1 }],
   });
@@ -64,17 +64,24 @@ test('fetches and displays markers on mount', async () => {
 test('creates a marker when handleMapClick is called', async () => {
   api.get.mockResolvedValueOnce({ data: [] });
   api.post.mockResolvedValueOnce({
-    data: { lat: 11, lng: 22, name: 'ufo', user: 1 },
+    data: { id: 1, lat: 11, lng: 22, name: 'other', user: 1 },
   });
 
   render(<MapPage />);
 
   await waitFor(() => {
-    expect(api.post).toHaveBeenCalledWith('markers/', {
-      lat: 11,
-      lng: 22,
-      name: 'other',
-    });
+    expect(api.post).toHaveBeenCalled();
+
+    const callArgs = api.post.mock.calls[0];
+    const url = callArgs[0];
+    const formData = callArgs[1];
+
+    expect(url).toBe('markers/');
+
+    expect(formData.get('lat')).toBe('11');
+    expect(formData.get('lng')).toBe('22');
+    expect(formData.get('name')).toBe('other');
+    expect(formData.get('image')).toBe(null);
   });
 
   await waitFor(() => {
@@ -124,6 +131,25 @@ test('shows toast error when user has no permission to create marker', async () 
   });
 });
 
+test('logs an error when fetching markers fails', async () => {
+  const mockError = new Error('Failed to fetch');
+  const consoleErrorSpy = vi
+    .spyOn(console, 'error')
+    .mockImplementation(() => {});
+  api.get.mockRejectedValueOnce(mockError);
+
+  render(<MapPage />);
+
+  await waitFor(() => {
+    expect(consoleErrorSpy).toHaveBeenCalledWith(
+      'Error fetching markers:',
+      mockError,
+    );
+  });
+
+  consoleErrorSpy.mockRestore();
+});
+
 test('logs error for other marker creation issues', async () => {
   const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
@@ -144,4 +170,33 @@ test('logs error for other marker creation issues', async () => {
   );
 
   consoleSpy.mockRestore();
+});
+
+test('logs an error when deleting a marker fails', async () => {
+  const mockError = new Error('Deletion failed');
+  const consoleErrorSpy = vi
+    .spyOn(console, 'error')
+    .mockImplementation(() => {});
+
+  const user = { role: 'GOLDEN' };
+  localStorage.setItem('user', JSON.stringify(user));
+
+  api.get.mockResolvedValueOnce({
+    data: [{ id: 1, name: 'ghost', lat: 10, lng: 10, user: 1 }],
+  });
+
+  api.delete.mockRejectedValueOnce(mockError);
+  render(<MapPage />);
+  const deleteButton = await screen.findByText('Delete Marker');
+
+  fireEvent.click(deleteButton);
+
+  await waitFor(() => {
+    expect(api.delete).toHaveBeenCalledWith('markers/1/');
+
+    expect(consoleErrorSpy).toHaveBeenCalledWith(
+      'Error deleting marker:',
+      mockError,
+    );
+  });
 });
