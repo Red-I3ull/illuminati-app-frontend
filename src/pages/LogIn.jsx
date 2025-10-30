@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate, NavLink } from 'react-router';
+import { useNavigate, NavLink } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import axios from 'axios';
 import { setAuthToken } from '../axiosConfig.js';
@@ -17,8 +17,6 @@ const LogIn = () => {
     }
     if (!password) {
       newErrors.password = 'Password cannot be empty.';
-    } else if (password.length < 8) {
-      newErrors.password = 'Password must be at least 8 characters long.';
     }
     return newErrors;
   };
@@ -45,7 +43,11 @@ const LogIn = () => {
     } catch (error) {
       console.error('Login failed:', error.response || error.message);
       if (error.response && error.response.status === 401) {
+        setErrors({ form: 'Invalid credentials. Please try again.' });
         toast.error('Invalid credentials');
+      } else {
+        setErrors({ form: 'Login failed. Please try again later.' });
+        toast.error('Login failed. Could not connect to server.');
       }
     }
   };
@@ -65,18 +67,18 @@ const LogIn = () => {
           <h2 className="text-3xl font-extrabold text-white text-center mb-8">
             Log In
           </h2>
-          <form className="space-y-6" onSubmit={handleSubmit}>
+          <form className="space-y-6" onSubmit={handleSubmit} noValidate>
             <div>
               <label
-                htmlFor="login"
+                htmlFor="username"
                 className="block text-sm font-medium text-gray-300 mb-2"
               >
                 Username
               </label>
               <input
                 type="text"
-                id="login"
-                name="login"
+                id="username"
+                name="username"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 autoComplete="username"
@@ -118,12 +120,16 @@ const LogIn = () => {
               )}
             </div>
 
+            {errors.form && (
+              <p className="text-sm text-red-500 text-center">{errors.form}</p>
+            )}
+
             <div>
               <button
                 type="submit"
-                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm 
-                             text-sm font-medium text-white bg-indigo-700 hover:bg-indigo-600 
-                             "
+                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm
+                             text-sm font-medium text-white bg-indigo-700 hover:bg-indigo-600
+                             focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
               >
                 Log In
               </button>

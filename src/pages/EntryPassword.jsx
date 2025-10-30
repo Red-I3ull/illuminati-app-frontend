@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router';
+import api from '../axiosConfig.js';
 
 const EntryPassword = () => {
   const [password, setPassword] = useState('');
@@ -12,7 +13,7 @@ const EntryPassword = () => {
       return 'Password cannot be empty.';
     }
     if (passwordValue.length < 8) {
-      return 'Inccorect';
+      return 'Incorrect';
     }
     return '';
   };
@@ -29,28 +30,26 @@ const EntryPassword = () => {
     setError('');
 
     try {
-      const response = await fetch(
-        'http://localhost:8000/verify-entry-password/',
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ password }),
-        },
+      const response = await api.post(
+        '/verify-entry-password/',
+        { password }
       );
 
-      const data = await response.json();
+      const data = response.data;
 
-      if (response.ok && data.success) {
+      if (response.status === 200 && data.success) {
         localStorage.setItem('entryPasswordVerified', 'true');
         navigate('/login');
       } else {
         setError(data.error || 'Incorrect password');
       }
     } catch (err) {
-      setError('Connection error. Please try again.');
-      console.error('Error:', err);
+      console.error('Error:', err.response || err);
+      if (err.response?.status === 401) {
+        setError(err.response.data.error || 'Incorrect password');
+      } else if (err.response?.status !== 403) {
+        setError('Connection error. Please try again.');
+      }
     } finally {
       setIsLoading(false);
     }
