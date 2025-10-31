@@ -7,6 +7,7 @@ import SignIn from './pages/Register.jsx';
 import LogIn from './pages/LogIn.jsx';
 import MapPage from './pages/Main.jsx';
 import Dashboard from './pages/Dashboard.jsx';
+import ProfilePage from './pages/ProfilePage.jsx';
 import ProtectedRoute from './components/ProtectedRoute.jsx';
 import { setAuthToken } from './axiosConfig.js';
 import { ToastContainer } from 'react-toastify';
@@ -54,6 +55,14 @@ createRoot(document.getElementById('root')).render(
             </ProtectedRoute>
           }
         />
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute>
+              <ProfilePage />
+            </ProtectedRoute>
+          }
+        />
       </Routes>
       <ToastContainer
         position="bottom-right"
@@ -65,6 +74,7 @@ createRoot(document.getElementById('root')).render(
         pauseOnFocusLoss
         draggable
         pauseOnHover
+        theme="dark"
       />
     </BrowserRouter>
   </StrictMode>,

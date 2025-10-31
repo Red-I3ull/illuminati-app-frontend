@@ -1,7 +1,9 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { BrowserRouter } from 'react-router-dom';
 import EntryPassword from '../pages/EntryPassword';
+import api from '../axiosConfig.js';
 
 const mockNavigate = vi.fn();
 
@@ -9,25 +11,29 @@ vi.mock('react-router', () => ({
   useNavigate: () => mockNavigate,
 }));
 
-const renderComponent = () => {
-  return render(
-    <BrowserRouter>
-      <EntryPassword />
-    </BrowserRouter>,
-  );
-};
+vi.mock('../axiosConfig.js', () => ({
+  default: {
+    post: vi.fn(),
+  },
+}));
 
 describe('EntryPassword Component', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     localStorage.clear();
-    vi.stubGlobal('fetch', vi.fn());
   });
 
   afterEach(() => {
-    vi.restoreAllMocks();
-    vi.unstubAllGlobals();
+    vi.clearAllMocks();
   });
+
+  const renderComponent = () => {
+    return render(
+      <BrowserRouter>
+        <EntryPassword />
+      </BrowserRouter>,
+    );
+  };
 
   it('renders the component with all elements', () => {
     renderComponent();
@@ -38,22 +44,22 @@ describe('EntryPassword Component', () => {
     expect(screen.getByAltText(/abstract artwork/i)).toBeInTheDocument();
   });
 
-  it('updates password input value on change', () => {
+  it('updates password input value on change', async () => {
+    const user = userEvent.setup();
     renderComponent();
 
     const passwordInput = screen.getByLabelText(/enter password/i);
-    fireEvent.change(passwordInput, {
-      target: { value: '${{ secrets.TESTPASS }}' },
-    });
+    await user.type(passwordInput, 'testpassword');
 
-    expect(passwordInput.value).toBe('${{ secrets.TESTPASS }}');
+    expect(passwordInput).toHaveValue('testpassword');
   });
 
   it('shows error when password is empty', async () => {
+    const user = userEvent.setup();
     renderComponent();
 
     const submitButton = screen.getByRole('button', { name: /submit/i });
-    fireEvent.click(submitButton);
+    await user.click(submitButton);
 
     await waitFor(() => {
       expect(screen.getByText(/password cannot be empty/i)).toBeInTheDocument();
@@ -61,195 +67,146 @@ describe('EntryPassword Component', () => {
   });
 
   it('shows error when password is less than 8 characters', async () => {
+    const user = userEvent.setup();
     renderComponent();
 
     const passwordInput = screen.getByLabelText(/enter password/i);
-    fireEvent.change(passwordInput, { target: { value: 'short' } });
-
     const submitButton = screen.getByRole('button', { name: /submit/i });
-    fireEvent.click(submitButton);
+
+    await user.type(passwordInput, 'short');
+    await user.click(submitButton);
 
     await waitFor(() => {
-      expect(screen.getByText(/inccorect/i)).toBeInTheDocument();
+      expect(screen.getByText('Incorrect')).toBeInTheDocument();
     });
   });
 
   it('submits form successfully with valid password', async () => {
-    vi.stubGlobal(
-      'fetch',
-      vi.fn(() =>
-        Promise.resolve({
-          ok: true,
-          json: () => Promise.resolve({ success: true }),
-        }),
-      ),
-    );
+    const user = userEvent.setup();
+    api.post.mockResolvedValueOnce({
+      status: 200,
+      data: { success: true },
+    });
 
     renderComponent();
 
     const passwordInput = screen.getByLabelText(/enter password/i);
-    fireEvent.change(passwordInput, {
-      target: { value: '${{ secrets.TESTPASS }}' },
-    });
-
     const submitButton = screen.getByRole('button', { name: /submit/i });
-    fireEvent.click(submitButton);
+
+    await user.type(passwordInput, 'validpassword');
+    await user.click(submitButton);
 
     await waitFor(() => {
-      expect(globalThis.fetch).toHaveBeenCalledWith(
-        'http://localhost:8000/verify-entry-password/',
-        expect.objectContaining({
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ password: '${{ secrets.TESTPASS }}' }),
-        }),
-      );
-    });
-
-    await waitFor(() => {
+      expect(api.post).toHaveBeenCalledWith('/verify-entry-password/', {
+        password: 'validpassword',
+      });
       expect(localStorage.getItem('entryPasswordVerified')).toBe('true');
       expect(mockNavigate).toHaveBeenCalledWith('/login');
     });
   });
 
   it('shows error message when API returns error', async () => {
-    vi.stubGlobal(
-      'fetch',
-      vi.fn(() =>
-        Promise.resolve({
-          ok: false,
-          json: () =>
-            Promise.resolve({ success: false, error: 'Incorrect password' }),
-        }),
-      ),
-    );
+    const user = userEvent.setup();
+    api.post.mockRejectedValueOnce({
+      response: {
+        status: 401,
+        data: { error: 'Incorrect password' },
+      },
+    });
 
     renderComponent();
 
     const passwordInput = screen.getByLabelText(/enter password/i);
-    fireEvent.change(passwordInput, {
-      target: { value: '${{ secrets.TESTPASS }}' },
-    });
-
     const submitButton = screen.getByRole('button', { name: /submit/i });
-    fireEvent.click(submitButton);
+
+    await user.type(passwordInput, 'wrongpassword');
+    await user.click(submitButton);
 
     await waitFor(() => {
-      expect(screen.getByText(/incorrect password/i)).toBeInTheDocument();
+      expect(screen.getByText('Incorrect password')).toBeInTheDocument();
     });
   });
 
   it('shows default error message when API returns no specific error', async () => {
-    vi.stubGlobal(
-      'fetch',
-      vi.fn(() =>
-        Promise.resolve({
-          ok: false,
-          json: () => Promise.resolve({ success: false }),
-        }),
-      ),
-    );
+    const user = userEvent.setup();
+    api.post.mockResolvedValueOnce({
+      status: 200,
+      data: { success: false },
+    });
 
     renderComponent();
 
     const passwordInput = screen.getByLabelText(/enter password/i);
-    fireEvent.change(passwordInput, {
-      target: { value: '${{ secrets.TESTPASS }}' },
-    });
-
     const submitButton = screen.getByRole('button', { name: /submit/i });
-    fireEvent.click(submitButton);
+
+    await user.type(passwordInput, 'somepassword');
+    await user.click(submitButton);
 
     await waitFor(() => {
-      expect(screen.getByText(/incorrect password/i)).toBeInTheDocument();
+      expect(screen.getByText('Incorrect password')).toBeInTheDocument();
     });
   });
 
   it('shows connection error when fetch fails', async () => {
-    vi.stubGlobal(
-      'fetch',
-      vi.fn(() => Promise.reject(new Error('Network error'))),
-    );
+    const user = userEvent.setup();
+    api.post.mockRejectedValueOnce(new Error('Network error'));
 
     renderComponent();
 
     const passwordInput = screen.getByLabelText(/enter password/i);
-    fireEvent.change(passwordInput, {
-      target: { value: '"${{ secrets.TESTPASS }}"' },
-    });
-
     const submitButton = screen.getByRole('button', { name: /submit/i });
-    fireEvent.click(submitButton);
+
+    await user.type(passwordInput, 'validpassword');
+    await user.click(submitButton);
 
     await waitFor(() => {
-      expect(screen.getByText(/connection error/i)).toBeInTheDocument();
+      expect(
+        screen.getByText(/connection error. please try again/i),
+      ).toBeInTheDocument();
     });
   });
 
   it('shows loading state during form submission', async () => {
-    vi.stubGlobal(
-      'fetch',
-      vi.fn(
-        () =>
-          new Promise((resolve) =>
-            setTimeout(
-              () =>
-                resolve({
-                  ok: true,
-                  json: () => Promise.resolve({ success: true }),
-                }),
-              100,
-            ),
-          ),
-      ),
+    const user = userEvent.setup();
+    api.post.mockImplementationOnce(
+      () => new Promise((resolve) => setTimeout(resolve, 100)),
     );
 
     renderComponent();
 
     const passwordInput = screen.getByLabelText(/enter password/i);
-    fireEvent.change(passwordInput, {
-      target: { value: '"${{ secrets.TESTPASS }}"' },
-    });
-
     const submitButton = screen.getByRole('button', { name: /submit/i });
-    fireEvent.click(submitButton);
 
-    expect(screen.getByText(/loading/i)).toBeInTheDocument();
+    await user.type(passwordInput, 'validpassword');
+    await user.click(submitButton);
+
+    expect(screen.getByText('Loading...')).toBeInTheDocument();
     expect(submitButton).toBeDisabled();
     expect(passwordInput).toBeDisabled();
-
-    await waitFor(() => {
-      expect(screen.getByText(/submit/i)).toBeInTheDocument();
-    });
   });
 
   it('clears previous error on successful validation', async () => {
+    const user = userEvent.setup();
     renderComponent();
 
     const passwordInput = screen.getByLabelText(/enter password/i);
     const submitButton = screen.getByRole('button', { name: /submit/i });
 
     // First submit with empty password
-    fireEvent.click(submitButton);
+    await user.click(submitButton);
     await waitFor(() => {
       expect(screen.getByText(/password cannot be empty/i)).toBeInTheDocument();
     });
 
     // Now submit with valid password
-    vi.stubGlobal(
-      'fetch',
-      vi.fn(() =>
-        Promise.resolve({
-          ok: true,
-          json: () => Promise.resolve({ success: true }),
-        }),
-      ),
-    );
-
-    fireEvent.change(passwordInput, {
-      target: { value: '"${{ secrets.TESTPASS }}"' },
+    api.post.mockResolvedValueOnce({
+      status: 200,
+      data: { success: true },
     });
-    fireEvent.click(submitButton);
+
+    await user.clear(passwordInput);
+    await user.type(passwordInput, 'validpassword');
+    await user.click(submitButton);
 
     await waitFor(() => {
       expect(
@@ -259,12 +216,13 @@ describe('EntryPassword Component', () => {
   });
 
   it('applies error border class when there is an error', async () => {
+    const user = userEvent.setup();
     renderComponent();
 
     const passwordInput = screen.getByLabelText(/enter password/i);
     const submitButton = screen.getByRole('button', { name: /submit/i });
 
-    fireEvent.click(submitButton);
+    await user.click(submitButton);
 
     await waitFor(() => {
       expect(passwordInput).toHaveClass('border-red-500');
