@@ -58,7 +58,7 @@ describe('ProfilePage', () => {
       id: 2,
       vote_type: { name: 'MUTE' },
       target_username: 'anotherUser',
-      time_remaining_seconds: 7200, // 2 hours
+      time_remaining_seconds: 7200,
       vote_counts: { total_cast: 3, agree: 1, disagree: 2 },
       current_user_vote: 'AGREE',
     },
@@ -115,7 +115,9 @@ describe('ProfilePage', () => {
   });
 
   it('handles error when fetching votes fails', async () => {
-    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const consoleErrorSpy = vi
+      .spyOn(console, 'error')
+      .mockImplementation(() => {});
     api.get.mockRejectedValueOnce(new Error('Network error'));
 
     await renderComponent();
@@ -145,7 +147,9 @@ describe('ProfilePage', () => {
       expect(api.post).toHaveBeenCalledWith('/votes/1/cast-vote/', {
         decision: 'AGREE',
       });
-      expect(toast.success).toHaveBeenCalledWith("Vote 'AGREE' cast successfully!");
+      expect(toast.success).toHaveBeenCalledWith(
+        "Vote 'AGREE' cast successfully!",
+      );
     });
   });
 
@@ -182,9 +186,11 @@ describe('ProfilePage', () => {
     });
   });
 
-    // Error handling on vote cast
+  // Error handling on vote cast
   it('handles vote casting error with detail message', async () => {
-    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const consoleErrorSpy = vi
+      .spyOn(console, 'error')
+      .mockImplementation(() => {});
     api.get.mockResolvedValueOnce({ data: [mockVotesResponse[0]] });
     api.post.mockRejectedValueOnce({
       response: { data: { detail: 'You have already voted' } },
@@ -204,7 +210,9 @@ describe('ProfilePage', () => {
   });
 
   it('handles vote casting error without detail message', async () => {
-    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const consoleErrorSpy = vi
+      .spyOn(console, 'error')
+      .mockImplementation(() => {});
     api.get.mockResolvedValueOnce({ data: [mockVotesResponse[0]] });
     api.post.mockRejectedValueOnce(new Error('Network error'));
 

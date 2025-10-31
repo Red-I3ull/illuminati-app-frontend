@@ -52,7 +52,7 @@ describe('Navigation', () => {
 
   it('renders navigation links', () => {
     renderNavigation('GOLDEN');
-    
+
     expect(screen.getByText('Map Page')).toBeInTheDocument();
     expect(screen.getByText('My Profile')).toBeInTheDocument();
     expect(screen.getByText('Dashboard')).toBeInTheDocument();
@@ -92,10 +92,10 @@ describe('Navigation', () => {
     const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
     renderNavigation();
-    
+
     expect(screen.getByText('Map Page')).toBeInTheDocument();
     expect(consoleSpy).toHaveBeenCalled();
-    
+
     consoleSpy.mockRestore();
   });
 });

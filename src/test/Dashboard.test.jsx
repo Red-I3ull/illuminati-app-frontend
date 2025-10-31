@@ -175,7 +175,9 @@ describe('Dashboard', () => {
     const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
     renderComponent();
 
-    const emailInput = screen.getByPlaceholderText('Enter user email to invite');
+    const emailInput = screen.getByPlaceholderText(
+      'Enter user email to invite',
+    );
     await user.type(emailInput, 'test@example.com');
 
     const submitButton = screen.getByText('Send Invite');
