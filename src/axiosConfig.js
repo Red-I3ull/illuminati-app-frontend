@@ -17,10 +17,7 @@ api.interceptors.response.use(
     return response;
   },
   (error) => {
-    if (
-      error.response?.status === 403 &&
-      error.response?.data?.redirect_url
-    ) {
+    if (error.response?.status === 403 && error.response?.data?.redirect_url) {
       localStorage.clear();
       sessionStorage.clear();
 
@@ -30,7 +27,7 @@ api.interceptors.response.use(
     }
 
     return Promise.reject(error);
-  }
+  },
 );
 
 export default api;

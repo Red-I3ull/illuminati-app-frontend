@@ -30,10 +30,7 @@ const EntryPassword = () => {
     setError('');
 
     try {
-      const response = await api.post(
-        '/verify-entry-password/',
-        { password }
-      );
+      const response = await api.post('/verify-entry-password/', { password });
 
       const data = response.data;
 

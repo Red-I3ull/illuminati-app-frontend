@@ -2,7 +2,7 @@ import React from 'react';
 import LogoIcon from '../assets/other.png';
 import { useNavigate, NavLink } from 'react-router-dom';
 import { setAuthToken } from '../axiosConfig.js';
-import {toast} from "react-toastify";
+import { toast } from 'react-toastify';
 
 const Navigation = () => {
   const navigate = useNavigate();
