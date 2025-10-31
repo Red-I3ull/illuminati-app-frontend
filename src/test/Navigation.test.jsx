@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import userEvent from '@testing-library/user-event';
-import Navigation from '../Components/Navigation';
+import Navigation from '../components/Navigation';
 import { setAuthToken } from '../axiosConfig.js';
 import { toast } from 'react-toastify';
 
