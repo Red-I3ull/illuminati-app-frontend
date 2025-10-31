@@ -213,7 +213,7 @@ const ProfilePage = () => {
         {/* --- Active Votes Section --- */}
         <div className="bg-gray-800 shadow-lg rounded-lg p-6 mb-8">
           <h3 className="text-xl font-semibold mb-4 border-b border-gray-700 pb-2 text-amber-400">
-            Active Votings
+            Active Voting
           </h3>
           {isLoadingVotes ? (
             <p className="text-center text-gray-400 py-4">
