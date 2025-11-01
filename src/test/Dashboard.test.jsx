@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { BrowserRouter } from 'react-router-dom';
@@ -315,7 +315,8 @@ describe('Download Backup Tests', () => {
   });
 
   it('handles failed download backup', async () => {
-    api.get.mockRejectedValueOnce(new Error('Network error'));
+    const mockError = new Error('Network issue');
+    api.get.mockRejectedValueOnce(mockError);
 
     const downloadBtn = screen.getByRole('button', {
       name: /Download Backup/i,
@@ -323,7 +324,7 @@ describe('Download Backup Tests', () => {
     await userEvent.click(downloadBtn);
 
     await waitFor(() => {
-      expect(toast.error).toHaveBeenCalledWith('Download failed');
+      expect(toast.error).toHaveBeenCalledWith(`Download failed ${mockError.message}`);
     });
   });
 
@@ -363,7 +364,8 @@ describe('Download Backup Tests', () => {
   });
 
   it('shows error toast if upload fails', async () => {
-    api.post.mockRejectedValueOnce(new Error('Upload error'));
+    const mockError = new Error('Server down');
+    api.post.mockRejectedValueOnce(mockError);
 
     const fileInput = screen.getByLabelText(/Backup File/i);
     const file = new File(['{}'], 'backup.json', { type: 'application/json' });
@@ -373,7 +375,7 @@ describe('Download Backup Tests', () => {
     fireEvent.submit(form);
 
     await waitFor(() => {
-      expect(toast.error).toHaveBeenCalledWith('Upload failed');
+      expect(toast.error).toHaveBeenCalledWith(`Upload failed ${mockError.message}`);
     });
   });
 });

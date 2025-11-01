@@ -132,7 +132,8 @@ const Dashboard = () => {
       link.parentNode.removeChild(link);
       window.URL.revokeObjectURL(url);
     } catch (error) {
-      toast.error('Download failed');
+      const errorMsg = error.message
+      toast.error(`Download failed ${errorMsg}`);
     } finally {
       setIsDownloading(false);
     }
@@ -165,7 +166,8 @@ const Dashboard = () => {
       setBackupFile(null);
       e.target.reset();
     } catch (error) {
-      toast.error('Upload failed');
+       const errorMsg = error.message
+      toast.error(`Upload failed ${errorMsg}`);
     } finally {
       setIsUploading(false);
     }
