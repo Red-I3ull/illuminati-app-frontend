@@ -10,6 +10,10 @@ const Dashboard = () => {
   const [selectedUserId, setSelectedUserId] = useState(null);
   const [isSubmittingNomination, setIsSubmittingNomination] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
+  const [inviteEmail, setInviteEmail] = useState('');
+  const [backupFile, setBackupFile] = useState(null);
+  const [isDownloading, setIsDownloading] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
 
   useEffect(() => {
     const userString = localStorage.getItem('user');
@@ -63,8 +67,6 @@ const Dashboard = () => {
     }
   }, [is_inquisitor]);
 
-  const [inviteEmail, setInviteEmail] = useState('');
-
   const handleUserSelect = (userId) => {
     setSelectedUserId(userId);
   };
@@ -110,6 +112,65 @@ const Dashboard = () => {
     e.preventDefault();
     console.log('compromised');
     toast.warn('Compromised button clicked!');
+  };
+
+  //Download backup
+  const handleDownloadBackup = async () => {
+    setIsDownloading(true);
+    try {
+      const response = await api.get('backup/', {
+        responseType: 'blob',
+      });
+
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', 'marker_backup.json');
+      document.body.appendChild(link);
+      link.click();
+
+      link.parentNode.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      const errorMsg = error.message;
+      toast.error(`Download failed ${errorMsg}`);
+    } finally {
+      setIsDownloading(false);
+    }
+  };
+
+  const handleFileChange = (e) => {
+    setBackupFile(e.target.files[0] || null);
+  };
+
+  //Upload backup
+  const handleUploadBackup = async (e) => {
+    e.preventDefault();
+    if (!backupFile) {
+      toast.error('Please select a file to upload');
+      return;
+    }
+
+    setIsUploading(true);
+    const formData = new FormData();
+    formData.append('backup_file', backupFile);
+
+    try {
+      await api.post('backup/', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      toast.success('Restore successful!');
+      setBackupFile(null);
+      e.target.reset();
+    } catch (error) {
+      const errorMsg = error.message;
+      toast.error(`Upload failed ${errorMsg}`);
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   return (
@@ -226,11 +287,21 @@ const Dashboard = () => {
           )}
         </div>
 
-        <div className="w-full md:w-1/3 p-6 bg-gray-800/50 border-l border-gray-700 flex flex-col justify-between">
+        <div className="w-full h-[calc(100vh-64px)] md:w-1/3 p-6 bg-gray-800/50 border-l border-gray-700 flex flex-col justify-between">
           <div>
             <h2 className="text-2xl font-bold mb-6 text-indigo-400">
               Other Actions
             </h2>
+
+            <div className="mt-8, mb-6">
+              <button
+                onClick={handleCompromisedClick}
+                className=" w-full !bg-red-800 hover:bg-red-900 text-white font-extrabold py-3 px-4 rounded-lg shadow-lg text-base transition-transform transform hover:scale-[1.02]"
+              >
+                WE ARE COMPROMISED
+              </button>
+            </div>
+
             <div className="bg-gray-800 shadow-lg rounded-lg p-6 mb-6">
               <h3 className="text-lg font-semibold mb-4">Invite New User</h3>
               <form onSubmit={handleInviteSubmit}>
@@ -255,20 +326,54 @@ const Dashboard = () => {
                 <h3 className="text-lg font-semibold mb-4">
                   Architect Actions
                 </h3>
-                <button className="w-full bg-gray-600 text-gray-400 font-bold py-2 px-4 rounded-md cursor-not-allowed text-sm">
-                  DB Backup (Not Implemented)
+                <p className="text-sm text-gray-400 mb-2">
+                  Download the backup of marker data
+                </p>
+                <button
+                  onClick={handleDownloadBackup}
+                  disabled={isDownloading}
+                  className="w-full block text-center bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md transition-colors disabled:bg-blue-800 disabled:cursor-not-allowed"
+                >
+                  {isDownloading ? 'Downloading...' : 'Download Backup'}
                 </button>
+
+                <p className="text-sm text-gray-400 mb-2, mt-4">
+                  Restore data from a backup file
+                </p>
+
+                <form onSubmit={handleUploadBackup}>
+                  <div className="mt-2, mb-4">
+                    <label
+                      htmlFor="backup_file"
+                      className="block text-sm font-medium text-gray-300 mb-2"
+                    >
+                      Backup File (.json)
+                    </label>
+                    <input
+                      type="file"
+                      name="backup_file"
+                      id="backup_file"
+                      accept=".json,application/json"
+                      //required
+                      onChange={handleFileChange}
+                      className="mt-2, block w-full text-sm text-gray-300 bg-gray-700 rounded-lg border border-gray-600 cursor-pointer
+                                  file:mr-4 file:py-2 file:px-4
+                                  file:rounded-l-lg file:border-0
+                                  file:text-sm file:font-semibold
+                                  file:bg-green-600 file:text-white
+                                  hover:file:bg-green-700"
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={isUploading}
+                    className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-md transition-colors disabled:bg-green-800 disabled:cursor-not-allowed"
+                  >
+                    {isUploading ? 'Uploading...' : 'Upload & Restore'}
+                  </button>
+                </form>
               </div>
             )}
-          </div>
-
-          <div className="mt-8">
-            <button
-              onClick={handleCompromisedClick}
-              className="w-full bg-red-800 hover:bg-red-900 text-white font-extrabold py-3 px-4 rounded-lg shadow-lg text-base transition-transform transform hover:scale-[1.02]"
-            >
-              WE ARE COMPROMISED
-            </button>
           </div>
         </div>
       </div>
