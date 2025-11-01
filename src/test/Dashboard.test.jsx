@@ -30,7 +30,6 @@ vi.mock('../components/Navigation', () => ({
   default: () => <div data-testid="navigation">Navigation</div>,
 }));
 
-
 afterEach(() => {
   vi.restoreAllMocks();
 });
@@ -207,8 +206,12 @@ describe('Dashboard', () => {
     );
 
     expect(screen.getByText('Architect Actions')).toBeInTheDocument();
-    expect(screen.getByText('Download the backup of marker data')).toBeInTheDocument();
-    expect(screen.getByText('Restore data from a backup file')).toBeInTheDocument();
+    expect(
+      screen.getByText('Download the backup of marker data'),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText('Restore data from a backup file'),
+    ).toBeInTheDocument();
   });
 
   it('displays compromised button', async () => {
@@ -255,7 +258,25 @@ describe('Dashboard', () => {
   });
 });
 
-  it('renders the backup and restore section', () => {
+it('renders the backup and restore section', () => {
+  const user = { is_inquisitor: false, role: 'ARCHITECT' };
+  localStorage.setItem('user', JSON.stringify(user));
+
+  render(
+    <BrowserRouter>
+      <Dashboard />
+    </BrowserRouter>,
+  );
+  expect(
+    screen.getByRole('button', { name: /Download Backup/i }),
+  ).toBeInTheDocument();
+  expect(
+    screen.getByRole('button', { name: /Upload & Restore/i }),
+  ).toBeInTheDocument();
+});
+
+describe('Download Backup Tests', () => {
+  beforeEach(() => {
     const user = { is_inquisitor: false, role: 'ARCHITECT' };
     localStorage.setItem('user', JSON.stringify(user));
 
@@ -264,103 +285,95 @@ describe('Dashboard', () => {
         <Dashboard />
       </BrowserRouter>,
     );
-    expect(screen.getByRole('button', { name: /Download Backup/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Upload & Restore/i })).toBeInTheDocument();
   });
 
-  describe('Download Backup Tests', () => {
+  it('handles successful backup download', async () => {
+    const mockBlob = new Blob(['test data'], { type: 'application/json' });
+    api.get.mockResolvedValueOnce({ data: mockBlob });
 
-    beforeEach(() => {
-      const user = { is_inquisitor: false, role: 'ARCHITECT' };
-      localStorage.setItem('user', JSON.stringify(user));
+    const mockCreateObjectURL = vi
+      .spyOn(window.URL, 'createObjectURL')
+      .mockReturnValue('blob:url');
+    const mockRevoke = vi
+      .spyOn(window.URL, 'revokeObjectURL')
+      .mockImplementation(() => {});
+    const appendSpy = vi.spyOn(document.body, 'appendChild');
+    const removeSpy = vi.spyOn(Element.prototype, 'removeChild');
 
-      render(
-        <BrowserRouter>
-          <Dashboard />
-        </BrowserRouter>,
+    const downloadButton = screen.getByRole('button', {
+      name: /Download Backup/i,
+    });
+    await userEvent.click(downloadButton);
+
+    await waitFor(() => {
+      expect(api.get).toHaveBeenCalledWith('backup/', { responseType: 'blob' });
+      expect(mockCreateObjectURL).toHaveBeenCalled();
+      expect(appendSpy).toHaveBeenCalled();
+      expect(removeSpy).toHaveBeenCalled();
+      expect(mockRevoke).toHaveBeenCalled();
+    });
+  });
+
+  it('handles failed download backup', async () => {
+    api.get.mockRejectedValueOnce(new Error('Network error'));
+
+    const downloadBtn = screen.getByRole('button', {
+      name: /Download Backup/i,
+    });
+    await userEvent.click(downloadBtn);
+
+    await waitFor(() => {
+      expect(toast.error).toHaveBeenCalledWith('Download failed');
+    });
+  });
+
+  it('shows error toast if no file selected on upload', async () => {
+    const uploadButton = screen.getByRole('button', {
+      name: /Upload & Restore/i,
+    });
+    await userEvent.click(uploadButton);
+
+    await waitFor(() => {
+      expect(toast.error).toHaveBeenCalledWith(
+        'Please select a file to upload',
       );
-
     });
-
-    it('handles successful backup download', async () => {
-
-      const mockBlob = new Blob(['test data'], { type: 'application/json' });
-      api.get.mockResolvedValueOnce({ data: mockBlob });
-
-      const mockCreateObjectURL = vi.spyOn(window.URL, 'createObjectURL').mockReturnValue('blob:url');
-      const mockRevoke = vi.spyOn(window.URL, 'revokeObjectURL').mockImplementation(() => {});
-      const appendSpy = vi.spyOn(document.body, 'appendChild');
-      const removeSpy = vi.spyOn(Element.prototype, 'removeChild');
-
-      const downloadButton = screen.getByRole('button', { name: /Download Backup/i });
-      await userEvent.click(downloadButton);
-
-      await waitFor(() => {
-        expect(api.get).toHaveBeenCalledWith('backup/', { responseType: 'blob' });
-        expect(mockCreateObjectURL).toHaveBeenCalled();
-        expect(appendSpy).toHaveBeenCalled();
-        expect(removeSpy).toHaveBeenCalled();
-        expect(mockRevoke).toHaveBeenCalled();
-      });
-      });
-
-
-    it('handles failed download backup', async () => {
-      api.get.mockRejectedValueOnce(new Error('Network error'));
-
-      const downloadBtn = screen.getByRole('button', { name: /Download Backup/i });
-      await userEvent.click(downloadBtn);
-
-      await waitFor(() => {
-        expect(toast.error).toHaveBeenCalledWith('Download failed');
-      });
-    });
-
-    it('shows error toast if no file selected on upload', async () => {
-      const uploadButton = screen.getByRole('button', { name: /Upload & Restore/i });
-      await userEvent.click(uploadButton);
-
-      await waitFor(() => {
-        expect(toast.error).toHaveBeenCalledWith('Please select a file to upload');
-      });
-    });
-  
-
-    it('uploads backup successfully', async () => {
-      api.post.mockResolvedValueOnce({});
-
-      const fileInput = screen.getByLabelText(/Backup File/i);
-      const file = new File(['{}'], 'backup.json', { type: 'application/json' });
-      await userEvent.upload(fileInput, file);
-
-      const form = fileInput.closest('form');
-      fireEvent.submit(form);
-
-      await waitFor(() => {
-        expect(api.post).toHaveBeenCalledWith(
-          'backup/',
-          expect.any(FormData),
-          expect.objectContaining({
-            headers: { 'Content-Type': 'multipart/form-data' },
-          })
-        );
-        expect(toast.success).toHaveBeenCalledWith('Restore successful!');
-      });
-    });
-
-    it('shows error toast if upload fails', async () => {
-      api.post.mockRejectedValueOnce(new Error('Upload error'));
-
-      const fileInput = screen.getByLabelText(/Backup File/i);
-      const file = new File(['{}'], 'backup.json', { type: 'application/json' });
-      await userEvent.upload(fileInput, file);
-
-      const form = fileInput.closest('form');
-      fireEvent.submit(form);
-
-      await waitFor(() => {
-        expect(toast.error).toHaveBeenCalledWith('Upload failed');
-      });
-    });
-
   });
+
+  it('uploads backup successfully', async () => {
+    api.post.mockResolvedValueOnce({});
+
+    const fileInput = screen.getByLabelText(/Backup File/i);
+    const file = new File(['{}'], 'backup.json', { type: 'application/json' });
+    await userEvent.upload(fileInput, file);
+
+    const form = fileInput.closest('form');
+    fireEvent.submit(form);
+
+    await waitFor(() => {
+      expect(api.post).toHaveBeenCalledWith(
+        'backup/',
+        expect.any(FormData),
+        expect.objectContaining({
+          headers: { 'Content-Type': 'multipart/form-data' },
+        }),
+      );
+      expect(toast.success).toHaveBeenCalledWith('Restore successful!');
+    });
+  });
+
+  it('shows error toast if upload fails', async () => {
+    api.post.mockRejectedValueOnce(new Error('Upload error'));
+
+    const fileInput = screen.getByLabelText(/Backup File/i);
+    const file = new File(['{}'], 'backup.json', { type: 'application/json' });
+    await userEvent.upload(fileInput, file);
+
+    const form = fileInput.closest('form');
+    fireEvent.submit(form);
+
+    await waitFor(() => {
+      expect(toast.error).toHaveBeenCalledWith('Upload failed');
+    });
+  });
+});
