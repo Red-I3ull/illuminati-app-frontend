@@ -324,7 +324,9 @@ describe('Download Backup Tests', () => {
     await userEvent.click(downloadBtn);
 
     await waitFor(() => {
-      expect(toast.error).toHaveBeenCalledWith(`Download failed ${mockError.message}`);
+      expect(toast.error).toHaveBeenCalledWith(
+        `Download failed ${mockError.message}`,
+      );
     });
   });
 
@@ -375,7 +377,9 @@ describe('Download Backup Tests', () => {
     fireEvent.submit(form);
 
     await waitFor(() => {
-      expect(toast.error).toHaveBeenCalledWith(`Upload failed ${mockError.message}`);
+      expect(toast.error).toHaveBeenCalledWith(
+        `Upload failed ${mockError.message}`,
+      );
     });
   });
 });
