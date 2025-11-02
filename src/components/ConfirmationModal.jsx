@@ -7,10 +7,16 @@ const ConfirmationModal = ({ isOpen, onClose, onConfirm, title, message }) => {
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75"
+      role="button"
+      tabIndex={0}
       onClick={onClose}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') onClose();
+      }}
     >
       <div
         className="relative w-full max-w-md p-6 mx-4 bg-gray-800 rounded-lg shadow-xl"
+        role="presentation"
         onClick={(e) => e.stopPropagation()}
       >
         <h3 className="text-lg font-bold text-white">{title}</h3>
@@ -42,6 +48,5 @@ ConfirmationModal.propTypes = {
   title: PropTypes.string.isRequired,
   message: PropTypes.string.isRequired,
 };
-
 
 export default ConfirmationModal;
