@@ -34,6 +34,15 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
+const mockNavigate = vi.fn();
+vi.mock('react-router-dom', async (importOriginal) => {
+  const actual = await importOriginal();
+  return {
+    ...actual,
+    useNavigate: () => mockNavigate,
+  };
+});
+
 describe('Dashboard', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -216,18 +225,10 @@ describe('Dashboard', () => {
 
   it('displays compromised button', async () => {
     const user = userEvent.setup();
-    const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
     renderComponent();
 
     const compromisedButton = screen.getByText('WE ARE COMPROMISED');
     expect(compromisedButton).toBeInTheDocument();
-
-    await user.click(compromisedButton);
-
-    expect(consoleSpy).toHaveBeenCalledWith('compromised');
-    expect(toast.warn).toHaveBeenCalledWith('Compromised button clicked!');
-
-    consoleSpy.mockRestore();
   });
 
   it('shows placeholder image for non-inquisitor', () => {
@@ -381,5 +382,83 @@ describe('Download Backup Tests', () => {
         `Upload failed ${mockError.message}`,
       );
     });
+  });
+});
+
+describe('Compromised workflow', () => {
+  beforeEach(() => {
+    const user = { is_inquisitor: false, role: 'GOLDEN' };
+    localStorage.setItem('user', JSON.stringify(user));
+
+    render(
+      <BrowserRouter>
+        <Dashboard />
+      </BrowserRouter>,
+    );
+    vi.clearAllMocks();
+    api.post.mockReset();
+  });
+
+  it('should open the modal when "WE ARE COMPROMISED" is clicked', () => {
+    fireEvent.click(
+      screen.getByRole('button', { name: /we are compromised/i }),
+    );
+
+    expect(
+      screen.getByRole('heading', { name: /are you absolutely sure/i }),
+    ).toBeInTheDocument();
+    expect(screen.getByText(/this action is critical/i)).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: /confirm/i }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /cancel/i })).toBeInTheDocument();
+  });
+
+  it('confirm compromised workfloww', async () => {
+    api.post.mockResolvedValue({ status: 200, data: 'success' });
+
+    fireEvent.click(
+      screen.getByRole('button', { name: /we are compromised/i }),
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: /confirm/i }));
+
+    expect(
+      screen.queryByRole('heading', { name: /are you absolutely sure/i }),
+    ).not.toBeInTheDocument();
+
+    await waitFor(() => {
+      expect(api.post).toHaveBeenCalledWith('compromised/');
+      expect(api.post).toHaveBeenCalledTimes(1);
+    });
+
+    expect(toast.warn).toHaveBeenCalledWith('Compromised protocol initiated!');
+    expect(mockNavigate).toHaveBeenCalledWith('/');
+    expect(toast.error).not.toHaveBeenCalled();
+  });
+
+  test('should show error toast and not navigate if compromised fails', async () => {
+    const errorMessage = 'Internal Server Error';
+    api.post.mockRejectedValue(new Error(errorMessage));
+
+    fireEvent.click(
+      screen.getByRole('button', { name: /we are compromised/i }),
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: /confirm/i }));
+
+    expect(
+      screen.queryByRole('heading', { name: /are you absolutely sure/i }),
+    ).not.toBeInTheDocument();
+
+    await waitFor(() => {
+      expect(api.post).toHaveBeenCalledWith('compromised/');
+    });
+
+    expect(toast.error).toHaveBeenCalledWith(
+      `Compromised failed ${errorMessage}`,
+    );
+    expect(toast.warn).not.toHaveBeenCalled();
+    expect(mockNavigate).not.toHaveBeenCalled();
   });
 });
