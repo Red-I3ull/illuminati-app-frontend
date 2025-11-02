@@ -224,7 +224,7 @@ describe('Dashboard', () => {
   });
 
   it('displays compromised button', async () => {
-    const user = userEvent.setup();
+    userEvent.setup();
     renderComponent();
 
     const compromisedButton = screen.getByText('WE ARE COMPROMISED');
@@ -437,7 +437,7 @@ describe('Compromised workflow', () => {
     expect(toast.error).not.toHaveBeenCalled();
   });
 
-  test('should show error toast and not navigate if compromised fails', async () => {
+  it('should show error toast and not navigate if compromised fails', async () => {
     const errorMessage = 'Internal Server Error';
     api.post.mockRejectedValue(new Error(errorMessage));
 
