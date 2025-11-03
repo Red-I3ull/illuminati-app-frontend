@@ -52,7 +52,9 @@ const ProfilePage = () => {
       try {
         const userData = JSON.parse(userString);
         setCurrentUser(userData);
-      } catch (e) { console.error('Error parsing user data', e); }
+      } catch (e) {
+        console.error('Error parsing user data', e);
+      }
     } else {
       toast.error('User data not found. Please log in.');
     }
@@ -61,7 +63,11 @@ const ProfilePage = () => {
   // Calculate promotion eligibility
   useEffect(() => {
     if (!currentUser) {
-      setPromotionStatus({ eligible: false, message: 'Loading user data...', isLoading: true });
+      setPromotionStatus({
+        eligible: false,
+        message: 'Loading user data...',
+        isLoading: true,
+      });
       return;
     }
 
@@ -71,7 +77,11 @@ const ProfilePage = () => {
 
     if (last_promotion_attempt) {
       const lastAttemptDate = new Date(last_promotion_attempt);
-      const nextAttemptDate = new Date(new Date(lastAttemptDate).setDate(lastAttemptDate.getDate() + cooldownDays));
+      const nextAttemptDate = new Date(
+        new Date(lastAttemptDate).setDate(
+          lastAttemptDate.getDate() + cooldownDays,
+        ),
+      );
       if (now < nextAttemptDate) {
         setPromotionStatus({
           eligible: false,
@@ -83,17 +93,29 @@ const ProfilePage = () => {
     }
 
     if (role === 'MASON' || role === 'SILVER') {
-      setPromotionStatus({ eligible: true, message: 'You are eligible to request promotion.', isLoading: false });
+      setPromotionStatus({
+        eligible: true,
+        message: 'You are eligible to request promotion.',
+        isLoading: false,
+      });
       return;
     }
 
     if (role === 'GOLDEN') {
       if (!role_assigned_at) {
-        setPromotionStatus({ eligible: false, message: 'Cannot verify time in role.', isLoading: false });
+        setPromotionStatus({
+          eligible: false,
+          message: 'Cannot verify time in role.',
+          isLoading: false,
+        });
         return;
       }
       const roleAssignedDate = new Date(role_assigned_at);
-      const architectEligibleDate = new Date(new Date(roleAssignedDate).setDate(roleAssignedDate.getDate() + cooldownDays));
+      const architectEligibleDate = new Date(
+        new Date(roleAssignedDate).setDate(
+          roleAssignedDate.getDate() + cooldownDays,
+        ),
+      );
 
       if (now < architectEligibleDate) {
         setPromotionStatus({
@@ -104,12 +126,19 @@ const ProfilePage = () => {
         return;
       }
 
-      setPromotionStatus({ eligible: true, message: 'You are eligible to request promotion to Architect.', isLoading: false });
+      setPromotionStatus({
+        eligible: true,
+        message: 'You are eligible to request promotion to Architect.',
+        isLoading: false,
+      });
       return;
     }
 
-    setPromotionStatus({ eligible: false, message: 'Your role cannot be promoted.', isLoading: false });
-
+    setPromotionStatus({
+      eligible: false,
+      message: 'Your role cannot be promoted.',
+      isLoading: false,
+    });
   }, [currentUser]);
 
   // Countdown timer effect
@@ -215,16 +244,24 @@ const ProfilePage = () => {
     setIsSubmittingPromotion(true);
     try {
       const response = await api.post('/votes/promote/');
-      toast.success(`Promotion vote to ${response.data.vote_type.name.split('_')[1]} started!`);
+      toast.success(
+        `Promotion vote to ${response.data.vote_type.name.split('_')[1]} started!`,
+      );
 
-      const updatedUser = { ...currentUser, last_promotion_attempt: new Date().toISOString() };
+      const updatedUser = {
+        ...currentUser,
+        last_promotion_attempt: new Date().toISOString(),
+      };
       localStorage.setItem('user', JSON.stringify(updatedUser));
       setCurrentUser(updatedUser);
 
-      setActiveVotes(prev => [response.data, ...prev]);
+      setActiveVotes((prev) => [response.data, ...prev]);
     } catch (error) {
       console.error('Error starting promotion vote:', error.response || error);
-      const errorMessage = error.response?.data?.message || error.response?.data?.detail || "Failed to start promotion vote.";
+      const errorMessage =
+        error.response?.data?.message ||
+        error.response?.data?.detail ||
+        'Failed to start promotion vote.';
       toast.error(errorMessage);
     } finally {
       setIsSubmittingPromotion(false);
@@ -322,16 +359,24 @@ const ProfilePage = () => {
             onClick={handleInitiatePromotion}
             disabled={!promotionStatus.eligible || isSubmittingPromotion}
             className={`w-full sm:w-auto font-bold py-2 px-6 rounded-md transition-colors ${
-              (!promotionStatus.eligible || isSubmittingPromotion)
+              !promotionStatus.eligible || isSubmittingPromotion
                 ? 'bg-gray-600 text-gray-400 cursor-not-allowed opacity-70'
                 : 'bg-blue-600 hover:bg-blue-700 text-white shadow'
             }`}
           >
-            {isSubmittingPromotion ? 'Starting Vote...' : (currentUser ? `Promote to ${
-              currentUser.role === 'MASON' ? 'Silver' :
-              currentUser.role === 'SILVER' ? 'Golden' :
-              currentUser.role === 'GOLDEN' ? 'Architect' : '...'
-            }` : 'Promote Rank')}
+            {isSubmittingPromotion
+              ? 'Starting Vote...'
+              : currentUser
+                ? `Promote to ${
+                    currentUser.role === 'MASON'
+                      ? 'Silver'
+                      : currentUser.role === 'SILVER'
+                        ? 'Golden'
+                        : currentUser.role === 'GOLDEN'
+                          ? 'Architect'
+                          : '...'
+                  }`
+                : 'Promote Rank'}
           </button>
           <p className="text-sm text-gray-400 mt-2">
             {promotionStatus.isLoading ? 'Loading...' : promotionStatus.message}
