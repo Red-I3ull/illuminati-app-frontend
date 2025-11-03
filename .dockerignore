@@ -1,0 +1,35 @@
+# dependencies
+node_modules
+
+
+# build output
+dist
+build
+
+# local env files
+.env
+
+# editor & OS junk
+.git
+.gitignore
+.vscode
+.github
+
+
+# Docker-related
+Dockerfile
+.dockerignore
+docker-compose.yml
+
+# test and coverage
+coverage
+__tests__
+*.test.js
+*.spec.js
+
+
+.prettierrc
+eslint.config.js
+.gitleaks.toml
+sonar-project.properties
+README.md
