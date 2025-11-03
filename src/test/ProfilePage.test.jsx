@@ -252,4 +252,233 @@ describe('ProfilePage', () => {
       expect(screen.getByText(/Agree: 4 \/ Disagree: 2/)).toBeInTheDocument();
     });
   });
+
+  it('displays closed badge when time expires', async () => {
+    const expiredVote = {
+      ...mockVotesResponse[0],
+      time_remaining_seconds: 0,
+    };
+    api.get.mockResolvedValueOnce({ data: [expiredVote] });
+
+    await renderComponent();
+
+    await waitFor(() => {
+      expect(screen.getByText('Closed')).toBeInTheDocument();
+    });
+  });
+
+  // Promotion eligibility
+  it('shows eligible message for MASON role', async () => {
+    api.get.mockResolvedValueOnce({ data: [] });
+    const masonUser = { role: 'MASON', last_promotion_attempt: null };
+    localStorage.setItem('user', JSON.stringify(masonUser));
+
+    await renderComponent();
+
+    await waitFor(() => {
+      expect(screen.getByText('You are eligible to request promotion.')).toBeInTheDocument();
+      expect(screen.getByText('Promote to Silver')).toBeInTheDocument();
+    });
+  });
+
+  it('shows eligible message for SILVER role', async () => {
+    api.get.mockResolvedValueOnce({ data: [] });
+    const silverUser = { role: 'SILVER', last_promotion_attempt: null };
+    localStorage.setItem('user', JSON.stringify(silverUser));
+
+    await renderComponent();
+
+    await waitFor(() => {
+      expect(screen.getByText('You are eligible to request promotion.')).toBeInTheDocument();
+      expect(screen.getByText('Promote to Golden')).toBeInTheDocument();
+    });
+  });
+
+  it('shows cooldown message when promotion attempted recently', async () => {
+    api.get.mockResolvedValueOnce({ data: [] });
+    const recentDate = new Date();
+    recentDate.setDate(recentDate.getDate() - 10);
+    const userWithCooldown = {
+      role: 'MASON',
+      last_promotion_attempt: recentDate.toISOString(),
+    };
+    localStorage.setItem('user', JSON.stringify(userWithCooldown));
+
+    await renderComponent();
+
+    await waitFor(() => {
+      expect(screen.getByText(/You can attempt promotion again after/)).toBeInTheDocument();
+    });
+  });
+
+  it('shows eligible for GOLDEN after 42 days', async () => {
+    api.get.mockResolvedValueOnce({ data: [] });
+    const oldDate = new Date();
+    oldDate.setDate(oldDate.getDate() - 50);
+    const goldenUser = {
+      role: 'GOLDEN',
+      role_assigned_at: oldDate.toISOString(),
+      last_promotion_attempt: null,
+    };
+    localStorage.setItem('user', JSON.stringify(goldenUser));
+
+    await renderComponent();
+
+    await waitFor(() => {
+      expect(screen.getByText('You are eligible to request promotion to Architect.')).toBeInTheDocument();
+      expect(screen.getByText('Promote to Architect')).toBeInTheDocument();
+    });
+  });
+
+  it('shows waiting message for GOLDEN under 42 days', async () => {
+    api.get.mockResolvedValueOnce({ data: [] });
+    const recentDate = new Date();
+    recentDate.setDate(recentDate.getDate() - 10);
+    const goldenUser = {
+      role: 'GOLDEN',
+      role_assigned_at: recentDate.toISOString(),
+      last_promotion_attempt: null,
+    };
+    localStorage.setItem('user', JSON.stringify(goldenUser));
+
+    await renderComponent();
+
+    await waitFor(() => {
+      expect(screen.getByText(/You must be Golden for 42 days/)).toBeInTheDocument();
+    });
+  });
+
+  it('shows cannot promote message for ARCHITECT role', async () => {
+    api.get.mockResolvedValueOnce({ data: [] });
+    const architectUser = { role: 'ARCHITECT', last_promotion_attempt: null };
+    localStorage.setItem('user', JSON.stringify(architectUser));
+
+    await renderComponent();
+
+    await waitFor(() => {
+      expect(screen.getByText('Your role cannot be promoted.')).toBeInTheDocument();
+    });
+  });
+
+  // Promotion action
+  it('successfully initiates promotion vote', async () => {
+    api.get.mockResolvedValueOnce({ data: [] });
+    const promotionResponse = {
+      id: 3,
+      vote_type: { name: 'PROMOTE_SILVER' },
+      target_username: null,
+      time_remaining_seconds: 7200,
+      vote_counts: { total_cast: 0, agree: 0, disagree: 0 },
+      current_user_vote: null,
+    };
+    api.post.mockResolvedValueOnce({ data: promotionResponse });
+
+    const masonUser = { role: 'MASON', last_promotion_attempt: null };
+    localStorage.setItem('user', JSON.stringify(masonUser));
+
+    const user = userEvent.setup();
+    await renderComponent();
+
+    const promoteButton = await screen.findByText('Promote to Silver');
+    await user.click(promoteButton);
+
+    await waitFor(() => {
+      expect(api.post).toHaveBeenCalledWith('/votes/promote/');
+      expect(toast.success).toHaveBeenCalledWith('Promotion vote to SILVER started!');
+    });
+  });
+
+  it('handles promotion vote error', async () => {
+    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    api.get.mockResolvedValueOnce({ data: [] });
+    api.post.mockRejectedValueOnce({
+      response: { data: { detail: 'Not eligible for promotion' } },
+    });
+
+    const masonUser = { role: 'MASON', last_promotion_attempt: null };
+    localStorage.setItem('user', JSON.stringify(masonUser));
+
+    const user = userEvent.setup();
+    await renderComponent();
+
+    const promoteButton = await screen.findByText('Promote to Silver');
+    await user.click(promoteButton);
+
+    await waitFor(() => {
+      expect(toast.error).toHaveBeenCalledWith('Not eligible for promotion');
+    });
+
+    consoleErrorSpy.mockRestore();
+  });
+
+  it('disables promotion button during submission', async () => {
+    api.get.mockResolvedValueOnce({ data: [] });
+    api.post.mockImplementationOnce(() => new Promise(() => {}));
+
+    const masonUser = { role: 'MASON', last_promotion_attempt: null };
+    localStorage.setItem('user', JSON.stringify(masonUser));
+
+    const user = userEvent.setup();
+    await renderComponent();
+
+    const promoteButton = await screen.findByText('Promote to Silver');
+    await user.click(promoteButton);
+
+    await waitFor(() => {
+      expect(screen.getByText('Starting Vote...')).toBeInTheDocument();
+    });
+  });
+
+  it('updates localStorage after successful promotion attempt', async () => {
+    api.get.mockResolvedValueOnce({ data: [] });
+    const promotionResponse = {
+      id: 3,
+      vote_type: { name: 'PROMOTE_SILVER' },
+      target_username: null,
+      time_remaining_seconds: 7200,
+      vote_counts: { total_cast: 0, agree: 0, disagree: 0 },
+      current_user_vote: null,
+    };
+    api.post.mockResolvedValueOnce({ data: promotionResponse });
+
+    const masonUser = { role: 'MASON', last_promotion_attempt: null };
+    localStorage.setItem('user', JSON.stringify(masonUser));
+
+    const user = userEvent.setup();
+    await renderComponent();
+
+    const promoteButton = await screen.findByText('Promote to Silver');
+    await user.click(promoteButton);
+
+    await waitFor(() => {
+      const updatedUser = JSON.parse(localStorage.getItem('user'));
+      expect(updatedUser.last_promotion_attempt).toBeTruthy();
+    });
+  });
+
+  // User data handling
+  it('handles missing user data in localStorage', async () => {
+    api.get.mockResolvedValueOnce({ data: [] });
+    localStorage.removeItem('user');
+
+    await renderComponent();
+
+    await waitFor(() => {
+      expect(toast.error).toHaveBeenCalledWith('User data not found. Please log in.');
+    });
+  });
+
+  it('handles invalid JSON in localStorage', async () => {
+    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    api.get.mockResolvedValueOnce({ data: [] });
+    localStorage.setItem('user', 'invalid json');
+
+    await renderComponent();
+
+    await waitFor(() => {
+      expect(consoleErrorSpy).toHaveBeenCalledWith('Error parsing user data', expect.any(Error));
+    });
+
+    consoleErrorSpy.mockRestore();
+  });
 });
