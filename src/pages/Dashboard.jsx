@@ -3,6 +3,7 @@ import { toast } from 'react-toastify';
 import Navigation from '../components/Navigation';
 import api from '../axiosConfig.js';
 import ScalesImage from '../assets/other.png';
+import ConfirmationModal from '../components/ConfirmationModal';
 
 const Dashboard = () => {
   const [users, setUsers] = useState([]);
@@ -14,6 +15,7 @@ const Dashboard = () => {
   const [backupFile, setBackupFile] = useState(null);
   const [isDownloading, setIsDownloading] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
     const userString = localStorage.getItem('user');
@@ -108,7 +110,7 @@ const Dashboard = () => {
     }
   };
 
-  const handleCompromisedClick = (e) => {
+  const handleConfirmCompromised = async (e) => {
     e.preventDefault();
     console.log('compromised');
     toast.warn('Compromised button clicked!');
@@ -295,12 +297,20 @@ const Dashboard = () => {
 
             <div className="mt-8, mb-6">
               <button
-                onClick={handleCompromisedClick}
+                onClick={() => setIsModalOpen(true)}
                 className=" w-full !bg-red-800 hover:bg-red-900 text-white font-extrabold py-3 px-4 rounded-lg shadow-lg text-base transition-transform transform hover:scale-[1.02]"
               >
                 WE ARE COMPROMISED
               </button>
             </div>
+
+            <ConfirmationModal
+              isOpen={isModalOpen}
+              onClose={handleCloseModal}
+              onConfirm={handleConfirmCompromised}
+              title="Are you absolutely sure?"
+              message="This will trigger the compromised protocol. This action is critical and cannot be undone."
+            />
 
             <div className="bg-gray-800 shadow-lg rounded-lg p-6 mb-6">
               <h3 className="text-lg font-semibold mb-4">Invite New User</h3>
