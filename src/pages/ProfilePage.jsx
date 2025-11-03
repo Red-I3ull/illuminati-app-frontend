@@ -18,6 +18,13 @@ const ProfilePage = () => {
   const [isLoadingVotes, setIsLoadingVotes] = useState(true);
   const [timeRemainingMap, setTimeRemainingMap] = useState({});
   const [isSubmittingVote, setIsSubmittingVote] = useState({});
+  const [currentUser, setCurrentUser] = useState(null);
+  const [promotionStatus, setPromotionStatus] = useState({
+    eligible: false,
+    message: 'Loading eligibility...',
+    isLoading: true,
+  });
+  const [isSubmittingPromotion, setIsSubmittingPromotion] = useState(false);
 
   const fetchActiveVotes = useCallback(async () => {
     setIsLoadingVotes(true);
@@ -40,7 +47,70 @@ const ProfilePage = () => {
 
   useEffect(() => {
     fetchActiveVotes();
+    const userString = localStorage.getItem('user');
+    if (userString) {
+      try {
+        const userData = JSON.parse(userString);
+        setCurrentUser(userData);
+      } catch (e) { console.error('Error parsing user data', e); }
+    } else {
+      toast.error('User data not found. Please log in.');
+    }
   }, [fetchActiveVotes]);
+
+  // Calculate promotion eligibility
+  useEffect(() => {
+    if (!currentUser) {
+      setPromotionStatus({ eligible: false, message: 'Loading user data...', isLoading: true });
+      return;
+    }
+
+    const { role, last_promotion_attempt, role_assigned_at } = currentUser;
+    const now = new Date();
+    const cooldownDays = 42;
+
+    if (last_promotion_attempt) {
+      const lastAttemptDate = new Date(last_promotion_attempt);
+      const nextAttemptDate = new Date(new Date(lastAttemptDate).setDate(lastAttemptDate.getDate() + cooldownDays));
+      if (now < nextAttemptDate) {
+        setPromotionStatus({
+          eligible: false,
+          message: `You can attempt promotion again after ${nextAttemptDate.toLocaleDateString()}.`,
+          isLoading: false,
+        });
+        return;
+      }
+    }
+
+    if (role === 'MASON' || role === 'SILVER') {
+      setPromotionStatus({ eligible: true, message: 'You are eligible to request promotion.', isLoading: false });
+      return;
+    }
+
+    if (role === 'GOLDEN') {
+      if (!role_assigned_at) {
+        setPromotionStatus({ eligible: false, message: 'Cannot verify time in role.', isLoading: false });
+        return;
+      }
+      const roleAssignedDate = new Date(role_assigned_at);
+      const architectEligibleDate = new Date(new Date(roleAssignedDate).setDate(roleAssignedDate.getDate() + cooldownDays));
+
+      if (now < architectEligibleDate) {
+        setPromotionStatus({
+          eligible: false,
+          message: `You must be Golden for 42 days. Eligible on ${architectEligibleDate.toLocaleDateString()}.`,
+          isLoading: false,
+        });
+        return;
+      }
+
+      setPromotionStatus({ eligible: true, message: 'You are eligible to request promotion to Architect.', isLoading: false });
+      return;
+    }
+
+    setPromotionStatus({ eligible: false, message: 'Your role cannot be promoted.', isLoading: false });
+
+  }, [currentUser]);
 
   // Countdown timer effect
   useEffect(() => {
@@ -140,6 +210,27 @@ const ProfilePage = () => {
     }
   };
 
+  // Handle promotion button click
+  const handleInitiatePromotion = async () => {
+    setIsSubmittingPromotion(true);
+    try {
+      const response = await api.post('/votes/promote/');
+      toast.success(`Promotion vote to ${response.data.vote_type.name.split('_')[1]} started!`);
+
+      const updatedUser = { ...currentUser, last_promotion_attempt: new Date().toISOString() };
+      localStorage.setItem('user', JSON.stringify(updatedUser));
+      setCurrentUser(updatedUser);
+
+      setActiveVotes(prev => [response.data, ...prev]);
+    } catch (error) {
+      console.error('Error starting promotion vote:', error.response || error);
+      const errorMessage = error.response?.data?.message || error.response?.data?.detail || "Failed to start promotion vote.";
+      toast.error(errorMessage);
+    } finally {
+      setIsSubmittingPromotion(false);
+    }
+  };
+
   const renderActiveVotesContent = () => {
     if (activeVotes.length === 0) {
       return (
@@ -228,14 +319,22 @@ const ProfilePage = () => {
             Rank Promotion
           </h3>
           <button
-            disabled={true}
-            className="w-full sm:w-auto font-bold py-2 px-6 rounded-md transition-colors bg-gray-600 text-gray-400 cursor-not-allowed opacity-70"
+            onClick={handleInitiatePromotion}
+            disabled={!promotionStatus.eligible || isSubmittingPromotion}
+            className={`w-full sm:w-auto font-bold py-2 px-6 rounded-md transition-colors ${
+              (!promotionStatus.eligible || isSubmittingPromotion)
+                ? 'bg-gray-600 text-gray-400 cursor-not-allowed opacity-70'
+                : 'bg-blue-600 hover:bg-blue-700 text-white shadow'
+            }`}
           >
-            Promote Rank (not implemented)
+            {isSubmittingPromotion ? 'Starting Vote...' : (currentUser ? `Promote to ${
+              currentUser.role === 'MASON' ? 'Silver' :
+              currentUser.role === 'SILVER' ? 'Golden' :
+              currentUser.role === 'GOLDEN' ? 'Architect' : '...'
+            }` : 'Promote Rank')}
           </button>
           <p className="text-sm text-gray-400 mt-2">
-            You can attempt promotion once every 42 days. (Eligibility check to
-            be added)
+            {promotionStatus.isLoading ? 'Loading...' : promotionStatus.message}
           </p>
         </div>
       </div>
