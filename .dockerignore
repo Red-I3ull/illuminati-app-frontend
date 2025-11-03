@@ -5,6 +5,8 @@ node_modules
 # build output
 dist
 build
+dist-ssr
+*.local
 
 # local env files
 .env
