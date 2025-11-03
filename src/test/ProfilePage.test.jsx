@@ -276,7 +276,9 @@ describe('ProfilePage', () => {
     await renderComponent();
 
     await waitFor(() => {
-      expect(screen.getByText('You are eligible to request promotion.')).toBeInTheDocument();
+      expect(
+        screen.getByText('You are eligible to request promotion.'),
+      ).toBeInTheDocument();
       expect(screen.getByText('Promote to Silver')).toBeInTheDocument();
     });
   });
@@ -289,7 +291,9 @@ describe('ProfilePage', () => {
     await renderComponent();
 
     await waitFor(() => {
-      expect(screen.getByText('You are eligible to request promotion.')).toBeInTheDocument();
+      expect(
+        screen.getByText('You are eligible to request promotion.'),
+      ).toBeInTheDocument();
       expect(screen.getByText('Promote to Golden')).toBeInTheDocument();
     });
   });
@@ -307,7 +311,9 @@ describe('ProfilePage', () => {
     await renderComponent();
 
     await waitFor(() => {
-      expect(screen.getByText(/You can attempt promotion again after/)).toBeInTheDocument();
+      expect(
+        screen.getByText(/You can attempt promotion again after/),
+      ).toBeInTheDocument();
     });
   });
 
@@ -325,7 +331,9 @@ describe('ProfilePage', () => {
     await renderComponent();
 
     await waitFor(() => {
-      expect(screen.getByText('You are eligible to request promotion to Architect.')).toBeInTheDocument();
+      expect(
+        screen.getByText('You are eligible to request promotion to Architect.'),
+      ).toBeInTheDocument();
       expect(screen.getByText('Promote to Architect')).toBeInTheDocument();
     });
   });
@@ -344,7 +352,9 @@ describe('ProfilePage', () => {
     await renderComponent();
 
     await waitFor(() => {
-      expect(screen.getByText(/You must be Golden for 42 days/)).toBeInTheDocument();
+      expect(
+        screen.getByText(/You must be Golden for 42 days/),
+      ).toBeInTheDocument();
     });
   });
 
@@ -356,7 +366,9 @@ describe('ProfilePage', () => {
     await renderComponent();
 
     await waitFor(() => {
-      expect(screen.getByText('Your role cannot be promoted.')).toBeInTheDocument();
+      expect(
+        screen.getByText('Your role cannot be promoted.'),
+      ).toBeInTheDocument();
     });
   });
 
@@ -384,12 +396,16 @@ describe('ProfilePage', () => {
 
     await waitFor(() => {
       expect(api.post).toHaveBeenCalledWith('/votes/promote/');
-      expect(toast.success).toHaveBeenCalledWith('Promotion vote to SILVER started!');
+      expect(toast.success).toHaveBeenCalledWith(
+        'Promotion vote to SILVER started!',
+      );
     });
   });
 
   it('handles promotion vote error', async () => {
-    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const consoleErrorSpy = vi
+      .spyOn(console, 'error')
+      .mockImplementation(() => {});
     api.get.mockResolvedValueOnce({ data: [] });
     api.post.mockRejectedValueOnce({
       response: { data: { detail: 'Not eligible for promotion' } },
@@ -464,19 +480,26 @@ describe('ProfilePage', () => {
     await renderComponent();
 
     await waitFor(() => {
-      expect(toast.error).toHaveBeenCalledWith('User data not found. Please log in.');
+      expect(toast.error).toHaveBeenCalledWith(
+        'User data not found. Please log in.',
+      );
     });
   });
 
   it('handles invalid JSON in localStorage', async () => {
-    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const consoleErrorSpy = vi
+      .spyOn(console, 'error')
+      .mockImplementation(() => {});
     api.get.mockResolvedValueOnce({ data: [] });
     localStorage.setItem('user', 'invalid json');
 
     await renderComponent();
 
     await waitFor(() => {
-      expect(consoleErrorSpy).toHaveBeenCalledWith('Error parsing user data', expect.any(Error));
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        'Error parsing user data',
+        expect.any(Error),
+      );
     });
 
     consoleErrorSpy.mockRestore();
