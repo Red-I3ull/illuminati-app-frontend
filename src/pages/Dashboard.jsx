@@ -3,6 +3,7 @@ import { toast } from 'react-toastify';
 import Navigation from '../components/Navigation';
 import api from '../axiosConfig.js';
 import ScalesImage from '../assets/other.png';
+import { useNavigate } from 'react-router-dom';
 import ConfirmationModal from '../components/ConfirmationModal';
 
 const Dashboard = () => {
@@ -16,6 +17,7 @@ const Dashboard = () => {
   const [isDownloading, setIsDownloading] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const userString = localStorage.getItem('user');
@@ -112,8 +114,20 @@ const Dashboard = () => {
 
   const handleConfirmCompromised = async (e) => {
     e.preventDefault();
-    console.log('compromised');
-    toast.warn('Compromised button clicked!');
+    setIsModalOpen(false);
+
+    try {
+      await api.post('compromised/');
+      toast.warn('Compromised protocol initiated!');
+      navigate('/');
+    } catch (error) {
+      const errorMsg = error.message;
+      toast.error(`Compromised failed ${errorMsg}`);
+    }
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
   };
 
   //Download backup
