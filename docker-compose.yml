@@ -1,14 +1,44 @@
-#for local development
+name: illuminati-app
 services:
+  db:
+    image: mariadb:10.11-ubi
+    restart: always
+    container_name: illuminati-db-2
+    environment:
+      MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD}
+      MARIADB_DATABASE: ${DBNAME}
+      MARIADB_USER: ${DBUSER}
+      MARIADB_PASSWORD: ${DBPASSWORD}
+    ports:
+      - '3306:3306'
+    healthcheck:
+      test: ['CMD', 'healthcheck.sh', '--connect', '--innodb_initialized']
+      start_period: 20s
+      interval: 10s
+      timeout: 5s
+      retries: 3
+  backend:
+    build:
+      context: ../illuminati-app-backend/ #eddit to corresponding local path
+      dockerfile: Dockerfile
+    command: sh -c "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
+    container_name: illuminati-backend-2
+    ports:
+      - '8000:8000'
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DBNAME: ${DBNAME}
+      DBUSER: ${DBUSER}
+      DBPASSWORD: ${DBPASSWORD}
+      DBHOST: db
+      DBPORT: 3306
+
   frontend:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: illuminati-frontend
+    container_name: illuminati-frontend-2
     ports:
       - '8080:8080'
-    volumes:
-      - ./src:/app/src
-      - ./node_modules:/app/node_modules
-    stdin_open: true
-    tty: true
