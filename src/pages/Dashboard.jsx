@@ -101,12 +101,27 @@ const Dashboard = () => {
     }
   };
 
-  const handleInviteSubmit = (e) => {
-    //for invintation endpoint
+  const handleInviteSubmit = async (e) => {
     e.preventDefault();
+
     if (inviteEmail && /\S+@\S+\.\S+/.test(inviteEmail)) {
-      console.log(`Invite sent to: ${inviteEmail}`);
-      setInviteEmail('');
+      try {
+        const response = await api.post(
+          '/invite/',
+          { email: inviteEmail },
+          {
+            headers: {
+              Authorization: `Token ${localStorage.getItem('authToken')}`,
+            },
+          },
+        );
+
+        toast.success(`Invite sent to: ${inviteEmail}`);
+        setInviteEmail('');
+      } catch (err) {
+        toast.error('Invite failed');
+        console.error(err);
+      }
     } else {
       toast.warn('Please enter a valid email address.');
     }
